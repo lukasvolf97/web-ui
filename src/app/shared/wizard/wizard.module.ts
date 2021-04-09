@@ -19,9 +19,15 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {AttributeComponent} from './attribute/attribute.component';
+import {ConstraintTypeIconPipe} from '../pipes/constraint-type-icon.pipe';
+import {PipesModule} from '../pipes/pipes.module';
+import {SelectModule} from '../select/select.module';
 
 @NgModule({
-  declarations: [],
-  imports: [CommonModule],
+  declarations: [AttributeComponent],
+  exports: [AttributeComponent],
+  imports: [CommonModule, SelectModule, PipesModule],
+  providers: [ConstraintTypeIconPipe],
 })
 export class WizardModule {}
