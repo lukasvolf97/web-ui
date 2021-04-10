@@ -23,6 +23,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -51,7 +52,7 @@ import {selectCollectionsPermissions} from '../../../../../core/store/user-permi
 import {ConstraintData} from '@lumeer/data-filters';
 import {ModalService} from '../../../../../shared/modal/modal.service';
 import {objectsByIdMap} from '../../../../../shared/utils/common.utils';
-import {selectTasksCollectionsByReadPermission} from '../../../../../core/store/common/permissions.selectors';
+import {selectTasksCollections} from '../../../../../core/store/common/permissions.selectors';
 
 @Component({
   selector: 'search-tasks-content',
@@ -60,7 +61,7 @@ import {selectTasksCollectionsByReadPermission} from '../../../../../core/store/
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DocumentFavoriteToggleService],
 })
-export class SearchTasksContentComponent implements OnInit, OnChanges {
+export class SearchTasksContentComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   public documents: DocumentModel[];
 
@@ -114,7 +115,7 @@ export class SearchTasksContentComponent implements OnInit, OnChanges {
   public ngOnInit() {
     this.toggleService.setWorkspace(this.workspace);
     this.permissions$ = this.store$.pipe(select(selectCollectionsPermissions));
-    this.allTasksCollections$ = this.store$.pipe(select(selectTasksCollectionsByReadPermission));
+    this.allTasksCollections$ = this.store$.pipe(select(selectTasksCollections));
   }
 
   public ngOnChanges(changes: SimpleChanges) {

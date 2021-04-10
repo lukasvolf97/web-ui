@@ -20,7 +20,6 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild} from '@angular/core';
 import {AbstractControl, FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {removeAllFormControls} from '../../../../../utils/form.utils';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {ActionConstraintFormControl} from './action-constraint-form-control';
 import {COLOR_SUCCESS} from '../../../../../../core/constants';
 import {Subscription} from 'rxjs';
@@ -66,8 +65,8 @@ export class ActionConstraintConfigFormComponent implements OnChanges, OnDestroy
   private savedColor: string;
   private subscription = new Subscription();
 
-  constructor(private i18n: I18n) {
-    this.defaultTitle = this.i18n({id: 'constraint.action.title.default', value: 'Action'});
+  constructor() {
+    this.defaultTitle = $localize`:@@constraint.action.title.default:Action`;
   }
 
   public get titleControl(): AbstractControl {
@@ -125,6 +124,7 @@ export class ActionConstraintConfigFormComponent implements OnChanges, OnDestroy
   private createForm() {
     this.addPermissionsForm();
     this.addButtonForms();
+    this.addConfirmationForms();
     this.addRuleForm();
     this.addConditionsForm();
   }
@@ -146,6 +146,17 @@ export class ActionConstraintConfigFormComponent implements OnChanges, OnDestroy
       this.titleUserControl.valueChanges.subscribe(value => {
         this.titleControl.setValue(cleanTitle(value) || this.defaultTitle);
       })
+    );
+  }
+
+  private addConfirmationForms() {
+    this.form.addControl(
+      ActionConstraintFormControl.RequiresConfirmation,
+      new FormControl(this.config?.requiresConfirmation)
+    );
+    this.form.addControl(
+      ActionConstraintFormControl.ConfirmationTitle,
+      new FormControl(this.config?.confirmationTitle)
     );
   }
 

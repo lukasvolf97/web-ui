@@ -19,7 +19,7 @@
 
 import {Component, OnInit, ChangeDetectionStrategy, HostListener, ViewChild, Input} from '@angular/core';
 import {DialogType} from '../dialog-type';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {BsModalRef} from 'ngx-bootstrap/modal';
 import {select, Store} from '@ngrx/store';
 import {AppState} from '../../../core/store/app.state';
@@ -30,13 +30,19 @@ import {Project} from '../../../core/store/projects/project';
 import {View} from '../../../core/store/views/view';
 import {Permission} from '../../../core/store/permissions/permissions';
 import {ViewsAction} from '../../../core/store/views/views.action';
-import {environment} from '../../../../environments/environment';
 import mixpanel from 'mixpanel-browser';
 import {Angulartics2} from 'angulartics2';
 import {selectOrganizationByWorkspace} from '../../../core/store/organizations/organizations.state';
 import {selectProjectByWorkspace} from '../../../core/store/projects/projects.state';
 import {selectAllUsers, selectCurrentUser} from '../../../core/store/users/users.state';
 import {ShareViewDialogBodyComponent} from './body/share-view-dialog-body.component';
+import {ConfigurationService} from '../../../configuration/configuration.service';
+import {perspectiveIconsMap} from '../../../view/perspectives/perspective';
+import {selectAllCollections} from '../../../core/store/collections/collections.state';
+import {selectAllLinkTypes} from '../../../core/store/link-types/link-types.state';
+import {map} from 'rxjs/operators';
+import {QueryItemsConverter} from '../../top-panel/search-box/query-item/query-items.converter';
+import {queryItemsColor} from '../../../core/store/navigation/query/query.util';
 
 @Component({
   templateUrl: './share-view-modal.component.html',
@@ -53,19 +59,38 @@ export class ShareViewModalComponent implements OnInit {
   public organization$: Observable<Organization>;
   public project$: Observable<Project>;
   public users$: Observable<User[]>;
+  public viewColor$: Observable<string>;
 
   public readonly dialogType = DialogType;
+
+  public icon: string;
 
   public formInvalid$ = new BehaviorSubject(true);
   public performingAction$ = new BehaviorSubject(false);
 
-  constructor(private bsModalRef: BsModalRef, private store$: Store<AppState>, private angulartics2: Angulartics2) {}
+  constructor(
+    private bsModalRef: BsModalRef,
+    private store$: Store<AppState>,
+    private configurationService: ConfigurationService,
+    private angulartics2: Angulartics2
+  ) {}
 
   public ngOnInit() {
+    this.icon = perspectiveIconsMap[this.view?.perspective] || '';
+
     this.organization$ = this.store$.pipe(select(selectOrganizationByWorkspace));
     this.project$ = this.store$.pipe(select(selectProjectByWorkspace));
     this.currentUser$ = this.store$.pipe(select(selectCurrentUser));
     this.users$ = this.store$.pipe(select(selectAllUsers));
+
+    this.viewColor$ = combineLatest([
+      this.store$.pipe(select(selectAllCollections)),
+      this.store$.pipe(select(selectAllLinkTypes)),
+    ]).pipe(
+      map(([collections, linkTypes]) => ({collections, linkTypes})),
+      map(queryData => new QueryItemsConverter(queryData).fromQuery(this.view.query)),
+      map(queryItems => queryItemsColor(queryItems))
+    );
   }
 
   public onSubmit() {
@@ -84,7 +109,7 @@ export class ShareViewModalComponent implements OnInit {
       })
     );
 
-    if (environment.analytics) {
+    if (this.configurationService.getConfiguration().analytics) {
       this.angulartics2.eventTrack.next({
         action: 'View share',
         properties: {
@@ -94,7 +119,7 @@ export class ShareViewModalComponent implements OnInit {
         },
       });
 
-      if (environment.mixpanelKey) {
+      if (this.configurationService.getConfiguration().mixpanelKey) {
         mixpanel.track('View Shared', {view: this.view.id});
       }
     }

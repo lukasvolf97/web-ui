@@ -83,17 +83,27 @@ export class BlocklyUtils {
   public static readonly CURRENT_DATE = 'current_date';
   public static readonly CURRENT_USER = 'current_user';
   public static readonly CURRENT_LOCALE = 'current_locale';
+  public static readonly ESCAPE_HTML = 'escape_html';
+  public static readonly UNESCAPE_HTML = 'unescape_html';
+  public static readonly FORMAT_CURRENCY = 'format_currency';
   public static readonly CREATE_DOCUMENT = 'create_document';
   public static readonly DELETE_DOCUMENT = 'delete_document';
   public static readonly LINK_DOCUMENTS_NO_RETURN = 'link_documents_no_return';
   public static readonly LINK_DOCUMENTS_RETURN = 'link_documents_return';
   public static readonly READ_DOCUMENTS = 'read_documents';
+  public static readonly GET_SIBLINGS = 'get_siblings';
+  public static readonly GET_HIERARCHY_SIBLINGS = 'get_hierarchy_siblings';
+  public static readonly GET_PARENT_DOCUMENT = 'get_parent_document';
+  public static readonly GET_CHILD_DOCUMENTS = 'get_child_documents';
   public static readonly IS_EMPTY = 'is_empty';
   public static readonly IS_NOT_EMPTY = 'is_not_empty';
   public static readonly PRINT_ATTRIBUTE = 'print_attribute';
+  public static readonly PRINT_TEXT = 'print_text';
   public static readonly SEND_EMAIL = 'send_email';
   public static readonly NAVIGATE_TO_VIEW = 'navigate_to_view';
   public static readonly STRING_REPLACE = 'string_replace';
+  public static readonly LOOP_BREAK = 'loop_break';
+  public static readonly LOOP_CONTINUE = 'loop_continue';
   public static readonly CREATE_DELETE_DOCUMENTS_LINKS_LIMIT = 25;
   public static readonly MAXIMUM_DOCUMENTS_RETURNED = 1000;
   public static readonly SHOW_MESSAGES_LIMIT = 5;
@@ -168,6 +178,43 @@ export class BlocklyUtils {
           if (collectionId) {
             block.setOutput(true, collectionId + BlocklyUtils.DOCUMENT_ARRAY_TYPE_SUFFIX);
           }
+        }
+      }
+
+      // set output type of get child documents block
+      if (block.type === BlocklyUtils.GET_PARENT_DOCUMENT) {
+        const input = block.getInput('DOCUMENT');
+
+        if (isNotNullOrUndefined(input.connection.targetConnection?.check_)) {
+          const inputType =
+            input.connection.targetConnection?.check_ instanceof Array
+              ? input.connection.targetConnection?.check_[0]
+              : input.connection.targetConnection?.check_;
+
+          block.setOutput(true, inputType);
+        }
+      }
+
+      // set output type of get siblings block, and
+      // set output type of get siblings in hierarchy block, and
+      // set output type of get child documents block
+      if (
+        block.type === BlocklyUtils.GET_SIBLINGS ||
+        block.type === BlocklyUtils.GET_HIERARCHY_SIBLINGS ||
+        block.type === BlocklyUtils.GET_CHILD_DOCUMENTS
+      ) {
+        const input = block.getInput('DOCUMENT');
+
+        if (isNotNullOrUndefined(input.connection.targetConnection?.check_)) {
+          const inputType =
+            input.connection.targetConnection?.check_ instanceof Array
+              ? input.connection.targetConnection?.check_[0]
+              : input.connection.targetConnection?.check_;
+
+          block.setOutput(
+            true,
+            inputType.replace(BlocklyUtils.DOCUMENT_VAR_SUFFIX, BlocklyUtils.DOCUMENT_ARRAY_TYPE_SUFFIX)
+          );
         }
       }
 
@@ -384,6 +431,9 @@ export class BlocklyUtils {
 
     if (parentBlock.type === BlocklyUtils.GET_ATTRIBUTE || parentBlock.type === BlocklyUtils.GET_LINK_ATTRIBUTE) {
       const newType =
+        block.type.endsWith(BlocklyUtils.GET_HIERARCHY_SIBLINGS) ||
+        block.type.endsWith(BlocklyUtils.GET_CHILD_DOCUMENTS) ||
+        block.type.endsWith(BlocklyUtils.GET_SIBLINGS) ||
         block.type.endsWith(BlocklyUtils.LINK_TYPE_BLOCK_SUFFIX) ||
         block.type.endsWith(BlocklyUtils.LINK_INSTANCE_BLOCK_SUFFIX)
           ? ['Array']
@@ -403,8 +453,9 @@ export class BlocklyUtils {
       const children = block.getChildren();
       const idx = (children || []).findIndex(
         child =>
-          child.type?.startsWith(BlocklyUtils.VARIABLES_GET_PREFIX) &&
-          child.type?.endsWith(BlocklyUtils.DOCUMENT_VAR_SUFFIX)
+          (child.type?.startsWith(BlocklyUtils.VARIABLES_GET_PREFIX) &&
+            child.type?.endsWith(BlocklyUtils.DOCUMENT_VAR_SUFFIX)) ||
+          child.type === BlocklyUtils.GET_PARENT_DOCUMENT
       );
 
       // search for all variable setters connected to document variables and set the variable type accordingly
@@ -412,9 +463,23 @@ export class BlocklyUtils {
         if (block.inputList?.length > 0 && block.inputList[0].fieldRow?.length > 1) {
           const variable = block.inputList[0].fieldRow[1].getVariable();
           if (variable) {
-            const [, , collectionId] = children[idx].type.split('_');
-            this.updateVariableType(workspace, variable, collectionId + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
-            block.inputList[0].fieldRow[1].variableTypes = [variable.type];
+            if (children[idx].type === BlocklyUtils.GET_PARENT_DOCUMENT) {
+              const input = children[idx].getInput('DOCUMENT');
+
+              if (isNotNullOrUndefined(input.connection.targetConnection?.check_)) {
+                const inputType =
+                  input.connection.targetConnection?.check_ instanceof Array
+                    ? input.connection.targetConnection?.check_[0]
+                    : input.connection.targetConnection?.check_;
+                const [collectionId] = inputType.split('_');
+                this.updateVariableType(workspace, variable, collectionId + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
+                block.inputList[0].fieldRow[1].variableTypes = [variable.type];
+              }
+            } else {
+              const [, , collectionId] = children[idx].type.split('_');
+              this.updateVariableType(workspace, variable, collectionId + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
+              block.inputList[0].fieldRow[1].variableTypes = [variable.type];
+            }
           }
         }
       } else {
@@ -609,7 +674,8 @@ export class BlocklyUtils {
 
   public getLinkType(id: string): LinkType {
     const currentLinkType = this.linkTypes?.find(linkType => linkType.id === id);
-    const collections = this.collections?.filter(c => currentLinkType.collectionIds.indexOf(c.id) >= 0);
+    const collections =
+      currentLinkType && this.collections?.filter(c => currentLinkType.collectionIds.indexOf(c.id) >= 0);
     if (collections?.length === 2) {
       return {...currentLinkType, collections: [collections[0], collections[1]]};
     }

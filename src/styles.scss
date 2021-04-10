@@ -12,6 +12,7 @@
 @import 'styles/overrides/quill';
 
 $flag-icon-css-path: '~flag-icon-css/flags' !default;
+$include: cz, gb, hu !default;
 @import '~flag-icon-css/sass/flag-icon';
 
 @import 'styles/overrides/full-calendar';
@@ -198,6 +199,10 @@ typeahead-container {
   text-decoration: underline !important;
 }
 
+.text-line-through {
+  text-decoration: line-through;
+}
+
 .min-h-100 {
   min-height: 100%;
 }
@@ -211,6 +216,10 @@ typeahead-container {
   td {
     padding: $table-cell-padding-md;
   }
+}
+
+.color-inherit {
+  color: inherit !important;
 }
 
 .text-gray-700 {

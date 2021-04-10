@@ -67,7 +67,6 @@ import {
 import {ModalService} from '../../../../shared/modal/modal.service';
 import {GanttChartVisualizationComponent} from './visualization/gantt-chart-visualization.component';
 import {BsModalRef} from 'ngx-bootstrap/modal';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {
   getQueryStemFiltersForResource,
   queryStemAttributesResourcesOrder,
@@ -82,6 +81,7 @@ import {
   DurationConstraint,
   durationCountsMapToString,
 } from '@lumeer/data-filters';
+import {ConfigurationService} from '../../../../configuration/configuration.service';
 
 interface Data {
   collections: Collection[];
@@ -179,10 +179,13 @@ export class GanttChartTasksComponent implements OnInit, OnChanges {
   constructor(
     private selectItemWithConstraintFormatter: SelectItemWithConstraintFormatter,
     private modalService: ModalService,
-    private i18n: I18n
+    private configurationService: ConfigurationService
   ) {
-    this.converter = new GanttChartConverter(this.selectItemWithConstraintFormatter);
-    this.newTaskName = i18n({id: 'gantt.perspective.task.create.title', value: 'New task'});
+    this.converter = new GanttChartConverter(
+      this.selectItemWithConstraintFormatter,
+      configurationService.getConfiguration()
+    );
+    this.newTaskName = $localize`:@@gantt.perspective.task.create.title:New task`;
   }
 
   public ngOnInit() {
@@ -712,10 +715,12 @@ export class GanttChartTasksComponent implements OnInit, OnChanges {
 
   public onTaskDetail(task: GanttTask) {
     const metadata = task.metadata as GanttTaskMetadata;
-    const resourceType = metadata.stemConfig.name?.resourceType || metadata.stemConfig.start?.resourceType;
-    const dataResource = this.getDataResource(metadata.nameDataId || metadata.startDataId, resourceType);
-    if (dataResource) {
-      this.openDataResourceModal(dataResource, resourceType);
+    if (metadata) {
+      const resourceType = metadata.stemConfig.name?.resourceType || metadata.stemConfig.start?.resourceType;
+      const dataResource = this.getDataResource(metadata.nameDataId || metadata.startDataId, resourceType);
+      if (dataResource) {
+        this.openDataResourceModal(dataResource, resourceType);
+      }
     }
   }
 

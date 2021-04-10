@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 import {deepObjectsEquals, isNotNullOrUndefined} from './common.utils';
 
 export function copyAndSpliceArray<T>(array: T[], index: number, deleteCount: number, ...items: T[]): T[] {
@@ -102,6 +103,14 @@ export function createRangeInclusive(from: number, to: number): number[] {
     }
   }
   return range;
+}
+
+export function appendToArray<T>(array: T[], item: T): T[] {
+  return [...(array || []), item];
+}
+
+export function removeFromArray<T>(array: T[], item: T): T[] {
+  return [...(array || [])].filter(it => it !== item);
 }
 
 export function createRange(from: number, to: number): number[] {

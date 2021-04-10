@@ -28,13 +28,18 @@ import {AppState} from '../../store/app.state';
 import {DocumentDto, LinkInstanceDto} from '../../dto';
 import {DocumentMetaDataDto} from '../../dto/document.dto';
 import {Workspace} from '../../store/navigation/workspace';
-import {environment} from '../../../../environments/environment';
 import {AppIdService} from '../../service/app-id.service';
 import {correlationIdHeader} from '../../rest/interceptors/correlation-id.http-interceptor';
+import {ConfigurationService} from '../../../configuration/configuration.service';
 
 @Injectable()
 export class ApiDocumentService extends BaseService implements DocumentService {
-  constructor(private httpClient: HttpClient, protected store$: Store<AppState>, private appId: AppIdService) {
+  constructor(
+    private httpClient: HttpClient,
+    protected store$: Store<AppState>,
+    private appId: AppIdService,
+    private configurationService: ConfigurationService
+  ) {
     super(store$);
   }
 
@@ -52,7 +57,11 @@ export class ApiDocumentService extends BaseService implements DocumentService {
 
   public updateDocumentData(document: DocumentDto): Observable<DocumentDto> {
     return this.httpClient
-      .put<DocumentDto>(`${this.apiPrefix({collectionId: document.collectionId})}/${document.id}/data`, document.data)
+      .put<DocumentDto>(`${this.apiPrefix({collectionId: document.collectionId})}/${document.id}/data`, document.data, {
+        headers: {
+          [correlationIdHeader]: this.appId.getAppId(),
+        },
+      })
       .pipe(
         map(returnedDocument => {
           return {...returnedDocument, collectionId: document.collectionId};
@@ -63,7 +72,12 @@ export class ApiDocumentService extends BaseService implements DocumentService {
   public patchDocumentData(document: DocumentDto): Observable<DocumentDto> {
     return this.httpClient.patch<DocumentDto>(
       `${this.apiPrefix({collectionId: document.collectionId})}/${document.id}/data`,
-      document.data
+      document.data,
+      {
+        headers: {
+          [correlationIdHeader]: this.appId.getAppId(),
+        },
+      }
     );
   }
 
@@ -127,10 +141,14 @@ export class ApiDocumentService extends BaseService implements DocumentService {
     );
   }
 
-  public runRule(collectionId: string, documentId: string, attributeId: string): Observable<any> {
-    return this.httpClient.post<any>(`${this.apiPrefix({collectionId})}/${documentId}/rule/${attributeId}`, {
-      correlationId: this.appId.getAppId(),
-    });
+  public runRule(collectionId: string, documentId: string, attributeId: string, actionName?: string): Observable<any> {
+    return this.httpClient.post<any>(
+      `${this.apiPrefix({collectionId})}/${documentId}/rule/${attributeId}?actionName=${actionName || ''}`,
+      {
+        correlationId: this.appId.getAppId(),
+        actionName,
+      }
+    );
   }
 
   private apiPrefix(workspace?: Workspace): string {
@@ -143,6 +161,8 @@ export class ApiDocumentService extends BaseService implements DocumentService {
     const organizationId = this.getOrCurrentOrganizationId(workspace);
     const projectId = this.getOrCurrentProjectId(workspace);
 
-    return `${environment.apiUrl}/rest/organizations/${organizationId}/projects/${projectId}`;
+    return `${
+      this.configurationService.getConfiguration().apiUrl
+    }/rest/organizations/${organizationId}/projects/${projectId}`;
   }
 }

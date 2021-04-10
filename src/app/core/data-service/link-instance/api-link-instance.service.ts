@@ -29,13 +29,19 @@ import {AppState} from '../../store/app.state';
 import {LinkInstanceDto} from '../../dto';
 import {LinkInstanceDuplicateDto} from '../../dto/link-instance.dto';
 import {Workspace} from '../../store/navigation/workspace';
-import {environment} from '../../../../environments/environment';
 import {AppIdService} from '../../service/app-id.service';
 import {DocumentLinksDto} from '../../dto/document-links.dto';
+import {ConfigurationService} from '../../../configuration/configuration.service';
+import {correlationIdHeader} from '../../rest/interceptors/correlation-id.http-interceptor';
 
 @Injectable()
 export class ApiLinkInstanceService extends BaseService implements LinkInstanceService {
-  constructor(private httpClient: HttpClient, protected store$: Store<AppState>, private appId: AppIdService) {
+  constructor(
+    private httpClient: HttpClient,
+    protected store$: Store<AppState>,
+    private appId: AppIdService,
+    private configurationService: ConfigurationService
+  ) {
     super(store$);
   }
 
@@ -56,11 +62,19 @@ export class ApiLinkInstanceService extends BaseService implements LinkInstanceS
   }
 
   public patchLinkInstanceData(linkInstanceId: string, data: Record<string, any>): Observable<LinkInstanceDto> {
-    return this.httpClient.patch<LinkInstanceDto>(`${this.apiPrefix(linkInstanceId)}/data`, data);
+    return this.httpClient.patch<LinkInstanceDto>(`${this.apiPrefix(linkInstanceId)}/data`, data, {
+      headers: {
+        [correlationIdHeader]: this.appId.getAppId(),
+      },
+    });
   }
 
   public updateLinkInstanceData(linkInstanceDto: LinkInstanceDto): Observable<LinkInstanceDto> {
-    return this.httpClient.put<LinkInstanceDto>(`${this.apiPrefix(linkInstanceDto.id)}/data`, linkInstanceDto.data);
+    return this.httpClient.put<LinkInstanceDto>(`${this.apiPrefix(linkInstanceDto.id)}/data`, linkInstanceDto.data, {
+      headers: {
+        [correlationIdHeader]: this.appId.getAppId(),
+      },
+    });
   }
 
   public deleteLinkInstance(id: string): Observable<string> {
@@ -71,10 +85,18 @@ export class ApiLinkInstanceService extends BaseService implements LinkInstanceS
     return this.httpClient.post<LinkInstanceDto[]>(`${this.apiPrefix()}/duplicate`, linkInstanceDuplicate);
   }
 
-  public runRule(linkTypeId: string, linkInstanceId: string, attributeId: string): Observable<any> {
-    return this.httpClient.post<any>(`${this.apiPrefix(linkTypeId, linkInstanceId)}/rule/${attributeId}`, {
-      correlationId: this.appId.getAppId(),
-    });
+  public runRule(
+    linkTypeId: string,
+    linkInstanceId: string,
+    attributeId: string,
+    actionName?: string
+  ): Observable<any> {
+    return this.httpClient.post<any>(
+      `${this.apiPrefix(linkTypeId, linkInstanceId)}/rule/${attributeId}?actionName=${actionName || ''}`,
+      {
+        correlationId: this.appId.getAppId(),
+      }
+    );
   }
 
   public setDocumentLinks(linkTypeId: string, dto: DocumentLinksDto): Observable<LinkInstanceDto[]> {
@@ -91,6 +113,8 @@ export class ApiLinkInstanceService extends BaseService implements LinkInstanceS
     const organizationId = this.getOrCurrentOrganizationId(workspace);
     const projectId = this.getOrCurrentProjectId(workspace);
 
-    return `${environment.apiUrl}/rest/organizations/${organizationId}/projects/${projectId}`;
+    return `${
+      this.configurationService.getConfiguration().apiUrl
+    }/rest/organizations/${organizationId}/projects/${projectId}`;
   }
 }

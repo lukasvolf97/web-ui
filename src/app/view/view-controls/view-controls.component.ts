@@ -31,7 +31,6 @@ import {
 } from '@angular/core';
 import {NavigationExtras} from '@angular/router';
 import {select, Store} from '@ngrx/store';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {debounceTime, map, take, tap} from 'rxjs/operators';
 import {NotificationService} from '../../core/notifications/notification.service';
@@ -57,7 +56,6 @@ import {SearchTab} from '../../core/store/navigation/search-tab';
 import {QueryParam} from '../../core/store/navigation/query-param';
 import {convertQueryModelToString} from '../../core/store/navigation/query/query.converter';
 import {ViewsAction} from '../../core/store/views/views.action';
-import {environment} from '../../../environments/environment';
 import {objectValues} from '../../shared/utils/common.utils';
 import {selectViewSettingsChanged} from '../../core/store/view-settings/view-settings.state';
 import {ViewSettingsAction} from '../../core/store/view-settings/view-settings.action';
@@ -69,6 +67,7 @@ import {
   selectProjectPermissions,
   selectViewsPermissions,
 } from '../../core/store/user-permissions/user-permissions.state';
+import {ConfigurationService} from '../../configuration/configuration.service';
 
 export const PERSPECTIVE_CHOOSER_CLICK = 'perspectiveChooserClick';
 
@@ -111,7 +110,7 @@ export class ViewControlsComponent implements OnInit, OnChanges, OnDestroy {
   private currentPerspective: Perspective;
   private workspace: Workspace;
 
-  public readonly canShareView = !environment.publicView;
+  public readonly canShareView: boolean;
   public readonly perspectives = objectValues(Perspective);
 
   private subscriptions = new Subscription();
@@ -119,9 +118,11 @@ export class ViewControlsComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private modalService: ModalService,
     private notificationService: NotificationService,
-    private i18n: I18n,
-    private store$: Store<AppState>
-  ) {}
+    private store$: Store<AppState>,
+    private configurationService: ConfigurationService
+  ) {
+    this.canShareView = !this.configurationService.getConfiguration().publicView;
+  }
 
   public ngOnInit() {
     this.subscriptions.add(this.subscribeToWorkspace());
@@ -192,13 +193,10 @@ export class ViewControlsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private askToDiscardChanges() {
-    const message = this.i18n({
-      id: 'view.discard.changes.message',
-      value: 'The view was changed. Do you want to save the changes?',
-    });
-    const title = this.i18n({id: 'view.discard.changes.message.title', value: 'Save view'});
-    const discard = this.i18n({id: 'button.discard', value: 'Discard'});
-    const save = this.i18n({id: 'button.save', value: 'Save'});
+    const message = $localize`:@@view.discard.changes.message:The view was changed. Do you want to save the changes?`;
+    const title = $localize`:@@view.discard.changes.message.title:Save view`;
+    const discard = $localize`:@@button.discard:Discard`;
+    const save = $localize`:@@button.save:Save`;
 
     this.notificationService.confirm(
       message,

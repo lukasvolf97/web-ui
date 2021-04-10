@@ -54,6 +54,8 @@ export enum DocumentsActionType {
   PATCH_DATA_INTERNAL = '[Documents] Patch Data Internal',
   PATCH_DATA_PENDING = '[Documents] Patch Data Pending',
 
+  REVERT_DATA = '[Documents] Revert Data',
+
   CHECK_DATA_HINT = '[Documents] Check Data Hint',
 
   UPDATE_META_DATA = '[Documents] Update Meta Data',
@@ -217,6 +219,12 @@ export namespace DocumentsAction {
     public constructor(public payload: {document: DocumentModel; originalDocument?: DocumentModel}) {}
   }
 
+  export class RevertData implements Action {
+    public readonly type = DocumentsActionType.REVERT_DATA;
+
+    public constructor(public payload: {document: DocumentModel}) {}
+  }
+
   export class PatchData implements Action {
     public readonly type = DocumentsActionType.PATCH_DATA;
 
@@ -348,7 +356,9 @@ export namespace DocumentsAction {
   export class RunRule implements Action {
     public readonly type = DocumentsActionType.RUN_RULE;
 
-    public constructor(public payload: {collectionId: string; documentId: string; attributeId: string}) {}
+    public constructor(
+      public payload: {collectionId: string; documentId: string; attributeId: string; actionName?: string}
+    ) {}
   }
 
   export class RunRuleFailure implements Action {
@@ -379,6 +389,7 @@ export namespace DocumentsAction {
     | DuplicateSuccess
     | UpdateData
     | UpdateDataInternal
+    | RevertData
     | PatchData
     | PatchDataInternal
     | PatchDataPending

@@ -21,7 +21,6 @@ import {Injectable} from '@angular/core';
 import {AppState} from '../../../../../../core/store/app.state';
 import {Action, select, Store} from '@ngrx/store';
 import {ModalService} from '../../../../../../shared/modal/modal.service';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {TableColumn} from '../../../../../../shared/table/model/table-column';
 import {CollectionsAction} from '../../../../../../core/store/collections/collections.action';
 import {LinkTypesAction} from '../../../../../../core/store/link-types/link-types.action';
@@ -124,7 +123,6 @@ export class WorkflowTablesDataService {
     private menuService: WorkflowTablesMenuService,
     private stateService: WorkflowTablesStateService,
     private modalService: ModalService,
-    private i18n: I18n,
     private constraintItemsFormatter: SelectItemWithConstraintFormatter,
     private copyValueService: CopyValueService
   ) {
@@ -579,7 +577,9 @@ export class WorkflowTablesDataService {
         return columns;
       }
 
-      columns.push(column);
+      if (!setting.hidden || permissions?.read || permissions?.manageWithView) {
+        columns.push(column);
+      }
       return columns;
     }, []);
 
@@ -912,14 +912,17 @@ export class WorkflowTablesDataService {
   }
 
   public showAttributeType(column: TableColumn) {
+    this.stateService.resetSelectedCell();
     this.modalService.showAttributeType(column.attribute.id, column.collectionId, column.linkTypeId);
   }
 
   public showAttributeDescription(column: TableColumn) {
+    this.stateService.resetSelectedCell();
     this.modalService.showAttributeDescription(column.attribute.id, column.collectionId, column.linkTypeId);
   }
 
   public showAttributeFunction(column: TableColumn) {
+    this.stateService.resetSelectedCell();
     this.modalService.showAttributeFunction(column.attribute.id, column.collectionId, column.linkTypeId);
   }
 
@@ -953,11 +956,8 @@ export class WorkflowTablesDataService {
     }
 
     if (action) {
-      const title = this.i18n({id: 'table.delete.column.dialog.title', value: 'Delete this column?'});
-      const message = this.i18n({
-        id: 'table.delete.column.dialog.message',
-        value: 'Do you really want to delete the column? This will permanently remove the attribute and all its data.',
-      });
+      const title = $localize`:@@table.delete.column.dialog.title:Delete this column?`;
+      const message = $localize`:@@table.delete.column.dialog.message:Do you really want to delete the column? This will permanently remove the attribute and all its data.`;
 
       this.store$.dispatch(new NotificationsAction.Confirm({title, message, action, type: 'danger'}));
     }

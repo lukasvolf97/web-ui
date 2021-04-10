@@ -20,6 +20,7 @@
 import {Pipe, PipeTransform, Injectable} from '@angular/core';
 
 import {User} from '../../../../core/store/users/user';
+import {removeAccentFromString} from '@lumeer/data-filters';
 
 @Pipe({
   name: 'userFilter',
@@ -30,6 +31,7 @@ export class UserFilterPipe implements PipeTransform {
     if (!users || !value) {
       return users;
     }
-    return users.filter(user => user.email.toLowerCase().includes(value.toLocaleLowerCase()));
+    const valueLowerCase = removeAccentFromString(value, true);
+    return users.filter(user => removeAccentFromString(user.email, true).includes(valueLowerCase));
   }
 }

@@ -28,7 +28,6 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {AbstractControl, FormControl, FormGroup} from '@angular/forms';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {AddressConstraintFormControl} from './constraint-config/address/address-constraint-form-control';
 import {CoordinatesConstraintFormControl} from './constraint-config/coordinates/coordinates-constraint-form-control';
 import {PercentageConstraintFormControl} from './constraint-config/percentage/percentage-constraint-form-control';
@@ -89,7 +88,7 @@ export class AttributeTypeFormComponent implements OnChanges {
     config: new FormGroup({}),
   });
 
-  constructor(private i18n: I18n, private notificationService: NotificationService) {}
+  constructor(private notificationService: NotificationService) {}
 
   public ngOnChanges(changes: SimpleChanges) {
     if (this.attributeTypeChanges(changes.attribute) && this.attribute) {
@@ -200,6 +199,7 @@ export class AttributeTypeFormComponent implements OnChanges {
           openInApp: this.configForm.get(LinkConstraintFormControl.OpenInApp)?.value,
         };
       case ConstraintType.Action:
+        const requiresConfirmation = this.configForm.get(ActionConstraintFormControl.RequiresConfirmation).value;
         return {
           title: this.configForm.get(ActionConstraintFormControl.Title).value,
           icon: this.configForm.get(ActionConstraintFormControl.Icon).value,
@@ -207,6 +207,10 @@ export class AttributeTypeFormComponent implements OnChanges {
           rule: this.configForm.get(ActionConstraintFormControl.Rule).value,
           role: this.configForm.get(ActionConstraintFormControl.Role).value,
           equation: this.createActionEquation(),
+          requiresConfirmation,
+          confirmationTitle: requiresConfirmation
+            ? this.configForm.get(ActionConstraintFormControl.ConfirmationTitle).value?.trim()
+            : null,
         };
       default:
         return null;
@@ -257,12 +261,8 @@ export class AttributeTypeFormComponent implements OnChanges {
   }
 
   private showSelectValueChangePrompt(attribute: Attribute) {
-    const title = this.i18n({id: 'constraint.select.modify.value.title', value: 'Remove options?'});
-    const message = this.i18n({
-      id: 'constraint.select.modify.value.message',
-      value:
-        'You are modifying the value of an option which might be used in some records. This will make those records value invalid. Do you want to proceed?',
-    });
+    const title = $localize`:@@constraint.select.modify.value.title:Remove options`;
+    const message = $localize`:@@constraint.select.modify.value.message:You are modifying the value of an option which might be used in some records. This will make those records value invalid. Do you want to proceed?`;
     this.notificationService.confirmYesOrNo(message, title, 'danger', () => this.attributeChange.emit(attribute));
   }
 

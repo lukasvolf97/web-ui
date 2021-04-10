@@ -47,6 +47,8 @@ export enum LinkInstancesActionType {
   PATCH_DATA = '[Link Instances] Patch Data',
   PATCH_DATA_INTERNAL = '[Link Instances] Patch Data :: Internal',
 
+  REVERT_DATA = '[Link Instances] Revert Data',
+
   UPDATE_SUCCESS = '[Link Instances] Update :: Success',
   UPDATE_FAILURE = '[Link Instances] Update :: Failure',
 
@@ -130,6 +132,12 @@ export namespace LinkInstancesAction {
     public readonly type = LinkInstancesActionType.CREATE_FAILURE;
 
     public constructor(public payload: {error: any}) {}
+  }
+
+  export class RevertData implements Action {
+    public readonly type = LinkInstancesActionType.REVERT_DATA;
+
+    public constructor(public payload: {linkInstance: LinkInstance}) {}
   }
 
   export class PatchData implements Action {
@@ -299,7 +307,9 @@ export namespace LinkInstancesAction {
   export class RunRule implements Action {
     public readonly type = LinkInstancesActionType.RUN_RULE;
 
-    public constructor(public payload: {linkTypeId: string; linkInstanceId: string; attributeId: string}) {}
+    public constructor(
+      public payload: {linkTypeId: string; linkInstanceId: string; attributeId: string; actionName?: string}
+    ) {}
   }
 
   export class RunRuleFailure implements Action {
@@ -321,6 +331,7 @@ export namespace LinkInstancesAction {
     | UpdateDataInternal
     | PatchData
     | PatchDataInternal
+    | RevertData
     | Update
     | UpdateInternal
     | UpdateSuccess

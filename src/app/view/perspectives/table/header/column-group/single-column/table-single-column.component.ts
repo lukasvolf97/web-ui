@@ -23,13 +23,13 @@ import {
   Component,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import {Actions, ofType} from '@ngrx/effects';
 import {Action, select, Store} from '@ngrx/store';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {distinctUntilChanged, switchMap, take} from 'rxjs/operators';
 import {AllowedPermissions} from '../../../../../../core/model/allowed-permissions';
@@ -65,7 +65,7 @@ import {computeElementPositionInParent, preventEvent} from '../../../../../../sh
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {class: 'position-relative'},
 })
-export class TableSingleColumnComponent implements OnInit, OnChanges {
+export class TableSingleColumnComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   public table: TableModel;
 
@@ -117,7 +117,6 @@ export class TableSingleColumnComponent implements OnInit, OnChanges {
     private attributeNameChangedPipe: AttributeNameChangedPipe,
     private changeDetector: ChangeDetectorRef,
     private modalService: ModalService,
-    private i18n: I18n,
     private store$: Store<AppState>
   ) {}
 
@@ -372,11 +371,8 @@ export class TableSingleColumnComponent implements OnInit, OnChanges {
   }
 
   private createConfirmAction(action: Action): NotificationsAction.Confirm {
-    const title = this.i18n({id: 'table.delete.column.dialog.title', value: 'Delete this column?'});
-    const message = this.i18n({
-      id: 'table.delete.column.dialog.message',
-      value: 'Do you really want to delete the column? This will permanently remove the attribute and all its data.',
-    });
+    const title = $localize`:@@table.delete.column.dialog.title:Delete this column?`;
+    const message = $localize`:@@table.delete.column.dialog.message:Do you really want to delete the column? This will permanently remove the attribute and all its data.`;
 
     return new NotificationsAction.Confirm({title, message, action, type: 'danger'});
   }

@@ -59,7 +59,6 @@ import {DateNowBlocklyComponent} from './blocks/date-now-blockly-component';
 import {SequenceBlocklyComponent} from './blocks/sequence-blockly-component';
 import {MsToUnitBlocklyComponent} from './blocks/ms-to-unit-blockly-component';
 import {CurrentUserBlocklyComponent} from './blocks/current-user-blockly-component';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {DateNowMsBlocklyComponent} from './blocks/date-now-ms-blockly-component';
 import {CurrentLocaleBlocklyComponent} from './blocks/current-locale-blockly-component';
 import {ShowMessageBlocklyComponent} from './blocks/show-message-blockly-component';
@@ -79,6 +78,17 @@ import {View} from '../../../core/store/views/view';
 import {ReadDocumentsBlocklyComponent} from './blocks/read-documents-blockly-component';
 import {SendEmailBlocklyComponent} from './blocks/send-email-blockly-component';
 import {NavigateBlocklyComponent} from './blocks/navigate-blockly-component';
+import {GetSiblingsBlocklyComponent} from './blocks/get-siblings-blockly-component';
+import {GetParentDocumentBlocklyComponent} from './blocks/get-parent-document-blockly-component';
+import {GetChildDocumentsBlocklyComponent} from './blocks/get-child-documents-blockly-component';
+import {GetHierarchySiblingsBlocklyComponent} from './blocks/get-hierarchy-siblings-blockly-component';
+import {LoopBreakBlocklyComponent} from './blocks/loop-break-blockly-component';
+import {LoopContinueBlocklyComponent} from './blocks/loop-continue-blockly-component';
+import {EscapeHtmlBlocklyComponent} from './blocks/escape-html-blockly-component';
+import {UnescapeHtmlBlocklyComponent} from './blocks/unescape-html-blockly-component';
+import {PrintTextBlocklyComponent} from './blocks/print-text-blockly-component';
+import {FormatCurrencyBlocklyComponent} from './blocks/format-currency-blockly-component';
+import {TranslationService} from '../../../core/service/translation.service';
 
 declare var Blockly: any;
 
@@ -140,8 +150,8 @@ export class BlocklyEditorComponent implements AfterViewInit, OnDestroy {
     private contrastColorPipe: ContrastColorPipe,
     private blocklyService: BlocklyService,
     private renderer2: Renderer2,
-    private i18n: I18n,
-    @Inject(DOCUMENT) private document
+    @Inject(DOCUMENT) private document,
+    private translationService: TranslationService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -151,41 +161,51 @@ export class BlocklyEditorComponent implements AfterViewInit, OnDestroy {
       this.blocklyUtils.setLumeerVariable(lumeerVar);
     }
     this.blocklyUtils.registerComponents([
-      new CreateDocumentBlocklyComponent(this.blocklyUtils, this.i18n),
-      new ForEachDocumentArrayBlocklyComponent(this.blocklyUtils, this.i18n),
-      new ForEachLinkArrayBlocklyComponent(this.blocklyUtils, this.i18n),
-      new GetAttributeBlocklyComponent(this.blocklyUtils, this.i18n),
-      new SetAttributeBlocklyComponent(this.blocklyUtils, this.i18n),
-      new GetLinkAttributeBlocklyComponent(this.blocklyUtils, this.i18n),
-      new SetLinkAttributeBlocklyComponent(this.blocklyUtils, this.i18n),
-      new GetLinkDocumentBlocklyComponent(this.blocklyUtils, this.i18n),
-      new DateChangeBlocklyComponent(this.blocklyUtils, this.i18n),
-      new DateToMsBlocklyComponent(this.blocklyUtils, this.i18n),
-      new MsToDateBlocklyComponent(this.blocklyUtils, this.i18n),
-      new DateToIsoBlocklyComponent(this.blocklyUtils, this.i18n),
-      new DateNowBlocklyComponent(this.blocklyUtils, this.i18n),
-      new DateNowMsBlocklyComponent(this.blocklyUtils, this.i18n),
-      new CurrentDateBlocklyComponent(this.blocklyUtils, this.i18n),
-      new ParseDateBlocklyComponent(this.blocklyUtils, this.i18n),
-      new FormatDateBlocklyComponent(this.blocklyUtils, this.i18n),
-      new CurrentUserBlocklyComponent(this.blocklyUtils, this.i18n),
-      new CurrentLocaleBlocklyComponent(this.blocklyUtils, this.i18n),
-      new MsToUnitBlocklyComponent(this.blocklyUtils, this.i18n),
-      new SequenceBlocklyComponent(this.blocklyUtils, this.i18n),
-      new ShowMessageBlocklyComponent(this.blocklyUtils, this.i18n),
-      new IsEmptyBlocklyComponent(this.blocklyUtils, this.i18n),
-      new IsNotEmptyBlocklyComponent(this.blocklyUtils, this.i18n),
-      new IsoToDateBlocklyComponent(this.blocklyUtils, this.i18n),
-      new IsoToMsBlocklyComponent(this.blocklyUtils, this.i18n),
-      new ShiftDateOfBlocklyComponent(this.blocklyUtils, this.i18n),
-      new PrintAttributeBlocklyComponent(this.blocklyUtils, this.i18n),
-      new StringReplaceBlocklyComponent(this.blocklyUtils, this.i18n),
-      new DeleteDocumentBlocklyComponent(this.blocklyUtils, this.i18n),
-      new LinkDocumentsNoReturnBlocklyComponent(this.blocklyUtils, this.i18n, this.linkTypes),
-      new LinkDocumentsReturnBlocklyComponent(this.blocklyUtils, this.i18n, this.linkTypes),
-      new ReadDocumentsBlocklyComponent(this.blocklyUtils, this.i18n, this.views),
-      new SendEmailBlocklyComponent(this.blocklyUtils, this.i18n),
-      new NavigateBlocklyComponent(this.blocklyUtils, this.i18n, this.views),
+      new CreateDocumentBlocklyComponent(this.blocklyUtils),
+      new ForEachDocumentArrayBlocklyComponent(this.blocklyUtils),
+      new ForEachLinkArrayBlocklyComponent(this.blocklyUtils),
+      new GetAttributeBlocklyComponent(this.blocklyUtils),
+      new SetAttributeBlocklyComponent(this.blocklyUtils),
+      new GetLinkAttributeBlocklyComponent(this.blocklyUtils),
+      new SetLinkAttributeBlocklyComponent(this.blocklyUtils),
+      new GetLinkDocumentBlocklyComponent(this.blocklyUtils),
+      new DateChangeBlocklyComponent(this.blocklyUtils),
+      new DateToMsBlocklyComponent(this.blocklyUtils),
+      new MsToDateBlocklyComponent(this.blocklyUtils),
+      new DateToIsoBlocklyComponent(this.blocklyUtils),
+      new DateNowBlocklyComponent(this.blocklyUtils),
+      new DateNowMsBlocklyComponent(this.blocklyUtils),
+      new CurrentDateBlocklyComponent(this.blocklyUtils),
+      new ParseDateBlocklyComponent(this.blocklyUtils),
+      new FormatDateBlocklyComponent(this.blocklyUtils),
+      new CurrentUserBlocklyComponent(this.blocklyUtils),
+      new CurrentLocaleBlocklyComponent(this.blocklyUtils),
+      new MsToUnitBlocklyComponent(this.blocklyUtils),
+      new SequenceBlocklyComponent(this.blocklyUtils),
+      new ShowMessageBlocklyComponent(this.blocklyUtils),
+      new IsEmptyBlocklyComponent(this.blocklyUtils),
+      new IsNotEmptyBlocklyComponent(this.blocklyUtils),
+      new IsoToDateBlocklyComponent(this.blocklyUtils),
+      new IsoToMsBlocklyComponent(this.blocklyUtils),
+      new ShiftDateOfBlocklyComponent(this.blocklyUtils),
+      new PrintAttributeBlocklyComponent(this.blocklyUtils),
+      new PrintTextBlocklyComponent(this.blocklyUtils),
+      new StringReplaceBlocklyComponent(this.blocklyUtils),
+      new DeleteDocumentBlocklyComponent(this.blocklyUtils),
+      new LinkDocumentsNoReturnBlocklyComponent(this.blocklyUtils, this.linkTypes),
+      new LinkDocumentsReturnBlocklyComponent(this.blocklyUtils, this.linkTypes),
+      new ReadDocumentsBlocklyComponent(this.blocklyUtils, this.views),
+      new SendEmailBlocklyComponent(this.blocklyUtils),
+      new NavigateBlocklyComponent(this.blocklyUtils, this.views),
+      new GetSiblingsBlocklyComponent(this.blocklyUtils, this.linkTypes),
+      new GetParentDocumentBlocklyComponent(this.blocklyUtils),
+      new GetChildDocumentsBlocklyComponent(this.blocklyUtils),
+      new GetHierarchySiblingsBlocklyComponent(this.blocklyUtils),
+      new LoopBreakBlocklyComponent(this.blocklyUtils),
+      new LoopContinueBlocklyComponent(this.blocklyUtils),
+      new EscapeHtmlBlocklyComponent(this.blocklyUtils),
+      new UnescapeHtmlBlocklyComponent(this.blocklyUtils),
+      new FormatCurrencyBlocklyComponent(this.blocklyUtils, this.translationService),
     ]);
 
     this.blocklyService.loadBlockly(this.renderer2, this.document, this.blocklyOnLoad.bind(this));
@@ -245,6 +265,23 @@ export class BlocklyEditorComponent implements AfterViewInit, OnDestroy {
         this.blocklyUtils.ensureLinkTypeBlock(this.linkTypes[i]);
         this.blocklyUtils.ensureLinkInstanceBlock(this.linkTypes[i]);
       }
+
+      const blocks = dom.getElementsByTagName('block');
+      for (let j = 0; j < blocks.length; j++) {
+        const blockType = blocks.item(j).attributes.getNamedItem('type').value;
+
+        if (
+          blockType.endsWith(BlocklyUtils.LINK_TYPE_BLOCK_SUFFIX) ||
+          blockType.endsWith(BlocklyUtils.LINK_INSTANCE_BLOCK_SUFFIX)
+        ) {
+          const linkType = blockType.split('-')[0];
+
+          if (!this.linkTypes.find(lt => lt.id === linkType)) {
+            blocks.item(j).remove();
+          }
+        }
+      }
+
       Blockly.Xml.domToWorkspace(dom, this.workspace);
       this.blocklyUtils.ensureTypeChecks(this.workspace);
     } else {
@@ -277,6 +314,9 @@ export class BlocklyEditorComponent implements AfterViewInit, OnDestroy {
         }
       }
     });
+    if (this.masterType === MasterBlockType.Function) {
+      this.workspace.createVariable('lumeerActionName', null, null);
+    }
     setTimeout(() => {
       this.initializing = false;
     }, 500); // let the DOM to be parsed in their timeout
@@ -583,9 +623,8 @@ export class BlocklyEditorComponent implements AfterViewInit, OnDestroy {
           if (block.type.endsWith(BlocklyUtils.LINK_TYPE_BLOCK_SUFFIX)) {
             const link = block.getInput('DOCUMENT');
             const linkedBlock = link.connection?.targetConnection?.getSourceBlock();
-
             if (linkedBlock && linkedBlock.type.endsWith(BlocklyUtils.DOCUMENT_VAR_SUFFIX)) {
-              const blockOutputType = this.blocklyUtils.getOutputConnectionCheck(block);
+              const blockOutputType = this.blocklyUtils.getOutputConnectionCheck(linkedBlock);
               const linkParts = this.blocklyUtils.getLinkParts(block.type);
               const counterpart =
                 linkParts[0] === blockOutputType.replace(BlocklyUtils.DOCUMENT_VAR_SUFFIX, '')
@@ -602,7 +641,8 @@ export class BlocklyEditorComponent implements AfterViewInit, OnDestroy {
     const workspace = this.workspace;
 
     // keep for easy debugging
-    /*if (changeEvent instanceof Blockly.Events.Ui) {
+    /*console.log(changeEvent);
+    if (changeEvent instanceof Blockly.Events.Ui) {
       const block = workspace.getBlockById(changeEvent.blockId);
       console.log(block);
     }*/
@@ -673,7 +713,7 @@ export class BlocklyEditorComponent implements AfterViewInit, OnDestroy {
 
       // disconnect invalid foreach input
       if (parentBlock.type === BlocklyUtils.FOREACH_LINK_ARRAY) {
-        if (parentBlock.getInput('LIST').connection?.targetConnection.sourceBlock_.id === block.id) {
+        if (parentBlock.getInput('LIST').connection?.targetConnection?.sourceBlock_.id === block.id) {
           if (!blockOutputType.endsWith(BlocklyUtils.LINK_TYPE_ARRAY_SUFFIX)) {
             parentBlock.getInput('LIST').connection.disconnect();
           } else {

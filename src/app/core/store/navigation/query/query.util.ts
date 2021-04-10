@@ -45,6 +45,7 @@ import {getAttributesResourceType} from '../../../../shared/utils/resource.utils
 import {QueryAttribute, QueryResource} from '../../../model/query-attribute';
 import {COLOR_PRIMARY} from '../../../constants';
 import {DataQuery} from '../../../model/data-query';
+import {AllowedPermissions} from '../../../model/allowed-permissions';
 
 export function queryItemToForm(queryItem: QueryItem): AbstractControl {
   switch (queryItem.type) {
@@ -167,8 +168,7 @@ export function getQueryStemFiltersForResource(
 }
 
 export function getQueryFiltersForCollection(query: Query, collectionId: string): CollectionAttributeFilter[] {
-  const stems = (query && query.stems) || [];
-  return stems.reduce((filters, stem) => {
+  return (query?.stems || []).reduce((filters, stem) => {
     const newFilters = (stem.filters || []).filter(
       filter => filter.collectionId === collectionId && !filters.find(f => deepObjectsEquals(f, filter))
     );
@@ -178,8 +178,7 @@ export function getQueryFiltersForCollection(query: Query, collectionId: string)
 }
 
 export function getQueryFiltersForLinkType(query: Query, linkTypeId: string): LinkAttributeFilter[] {
-  const stems = (query && query.stems) || [];
-  return stems.reduce((filters, stem) => {
+  return (query?.stems || []).reduce((filters, stem) => {
     const newFilters = (stem.linkFilters || []).filter(
       filter => filter.linkTypeId === linkTypeId && !filters.find(f => deepObjectsEquals(f, filter))
     );
@@ -189,15 +188,10 @@ export function getQueryFiltersForLinkType(query: Query, linkTypeId: string): Li
 }
 
 export function getAllLinkTypeIdsFromQuery(query: Query): string[] {
-  return (
-    (query &&
-      query.stems &&
-      query.stems.reduce((ids, stem) => {
-        (stem.linkTypeIds || []).forEach(linkTypeId => !ids.includes(linkTypeId) && ids.push(linkTypeId));
-        return ids;
-      }, [])) ||
-    []
-  );
+  return (query?.stems || []).reduce((ids, stem) => {
+    (stem.linkTypeIds || []).forEach(linkTypeId => !ids.includes(linkTypeId) && ids.push(linkTypeId));
+    return ids;
+  }, []);
 }
 
 export function getAllCollectionIdsFromQuery(query: Query, linkTypes: LinkType[]): string[] {
@@ -220,13 +214,13 @@ export function isQuerySubset(superset: Query, subset: Query): boolean {
     return false;
   }
 
-  if ((subset?.stems?.length || 0) > (superset?.stems?.length || 0)) {
+  if ((superset?.stems?.length || 0) > (subset?.stems?.length || 0)) {
     return false;
   }
 
-  return (subset?.stems || []).every(stem => {
-    const supersetStem = superset?.stems?.find(s => s.collectionId === stem.collectionId);
-    return supersetStem && isQueryStemSubset(supersetStem, stem);
+  return (superset?.stems || []).every(stem => {
+    const subsetStem = subset?.stems?.find(s => s.collectionId === stem.collectionId);
+    return subsetStem && isQueryStemSubset(stem, subsetStem);
   });
 }
 
@@ -240,19 +234,29 @@ export function isQueryStemSubset(superset: QueryStem, subset: QueryStem): boole
   );
 }
 
-export function checkTasksCollectionsQuery(collections: Collection[], query: DataQuery): DataQuery {
+export function checkTasksCollectionsQuery(
+  collections: Collection[],
+  query: DataQuery,
+  permissions: Record<string, AllowedPermissions>
+): DataQuery {
   if (queryIsEmptyExceptPagination(query)) {
-    return tasksCollectionsQuery(collections);
+    return tasksCollectionsQuery(collections, permissions);
   }
   return query;
 }
 
-export function tasksCollectionsQuery(collections: Collection[]): Query {
-  const stems = collections.map(collection => tasksCollectionQueryStem(collection)).filter(stem => !!stem);
+export function tasksCollectionsQuery(
+  collections: Collection[],
+  permissions: Record<string, AllowedPermissions>
+): Query {
+  const stems = collections.map(collection => tasksCollectionQueryStem(collection, permissions)).filter(stem => !!stem);
   return {stems};
 }
 
-export function tasksCollectionQueryStem(collection: Collection): QueryStem {
+export function tasksCollectionQueryStem(
+  collection: Collection,
+  permissions: Record<string, AllowedPermissions>
+): QueryStem {
   if (collection.purpose?.type === CollectionPurposeType.Tasks) {
     const assigneeAttributeId = collection.purpose?.metaData?.assigneeAttributeId;
     const assigneeAttribute = findAttribute(collection.attributes, assigneeAttributeId);
@@ -269,6 +273,8 @@ export function tasksCollectionQueryStem(collection: Collection): QueryStem {
         ],
       };
     }
+  } else if (permissions?.[collection.id]?.read) {
+    return {collectionId: collection.id};
   }
   return null;
 }

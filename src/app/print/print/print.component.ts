@@ -22,13 +22,14 @@ import {select, Store} from '@ngrx/store';
 import {AppState} from '../../core/store/app.state';
 import {selectWorkspace} from '../../core/store/navigation/navigation.state';
 import {filter, map, mergeMap, tap} from 'rxjs/operators';
-import {combineLatest, Observable} from 'rxjs';
+import {combineLatest, Observable, of} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentsAction} from '../../core/store/documents/documents.action';
 import {selectDocumentById} from '../../core/store/documents/documents.state';
 import {ResourceType} from '../../core/model/resource-type';
 import {LinkInstancesAction} from '../../core/store/link-instances/link-instances.action';
 import {selectLinkInstanceById} from '../../core/store/link-instances/link-instances.state';
+import {PrintService} from '../../core/service/print.service';
 
 @Component({
   selector: 'print',
@@ -39,15 +40,23 @@ import {selectLinkInstanceById} from '../../core/store/link-instances/link-insta
 export class PrintComponent implements OnInit {
   public value$: Observable<any>;
 
-  constructor(private store$: Store<AppState>, private _routes: ActivatedRoute) {}
+  constructor(
+    private store$: Store<AppState>,
+    private activatedRoute: ActivatedRoute,
+    private printService: PrintService
+  ) {}
 
   public ngOnInit(): void {
-    this.value$ = this._routes.paramMap.pipe(
+    this.value$ = this.activatedRoute.paramMap.pipe(
       tap(paramMap => this.fetchDocument(paramMap)),
       mergeMap(paramMap => {
         const resourceType = paramMap.get('resourceType');
         const documentId = paramMap.get('documentId');
         const attributeId = paramMap.get('attributeId');
+
+        if (resourceType === 'text') {
+          return of(this.printService.getContent());
+        }
 
         return combineLatest([
           this.store$.pipe(select(selectWorkspace)),

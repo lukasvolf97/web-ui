@@ -17,11 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 
 import {select, Store} from '@ngrx/store';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {filter, map, take} from 'rxjs/operators';
 import {ResourceType} from '../../core/model/resource-type';
@@ -42,7 +41,7 @@ import {SearchTab} from '../../core/store/navigation/search-tab';
   templateUrl: './project-settings.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectSettingsComponent implements OnInit {
+export class ProjectSettingsComponent implements OnInit, OnDestroy {
   public userCount$: Observable<number>;
   public projectCodes$: Observable<string[]>;
   public project$ = new BehaviorSubject<Project>(null);
@@ -54,7 +53,6 @@ export class ProjectSettingsComponent implements OnInit {
   private subscriptions = new Subscription();
 
   constructor(
-    private i18n: I18n,
     private router: Router,
     private store$: Store<AppState>,
     private notificationService: NotificationService
@@ -68,12 +66,9 @@ export class ProjectSettingsComponent implements OnInit {
     this.subscriptions.unsubscribe();
   }
 
-  public onDelete(): void {
-    const message = this.i18n({
-      id: 'project.delete.dialog.message',
-      value: 'Do you really want to permanently delete this project?',
-    });
-    const title = this.i18n({id: 'project.delete.dialog.title', value: 'Delete project?'});
+  public onDelete() {
+    const message = $localize`:@@project.delete.dialog.message:Do you really want to permanently delete this project?`;
+    const title = $localize`:@@project.delete.dialog.title:Delete project?`;
 
     this.notificationService.confirmYesOrNo(message, title, 'danger', () => this.deleteProject());
   }

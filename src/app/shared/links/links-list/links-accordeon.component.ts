@@ -44,7 +44,8 @@ import {map, take} from 'rxjs/operators';
 import {selectLinkTypesByCollectionId} from '../../../core/store/common/permissions.selectors';
 import {mapLinkTypeCollections} from '../../utils/link-type.utils';
 import {selectCollectionsPermissions} from '../../../core/store/user-permissions/user-permissions.state';
-import {objectChanged} from '../../utils/common.utils';
+import {objectChanged, preventEvent} from '../../utils/common.utils';
+import {ModalService} from '../../modal/modal.service';
 
 @Component({
   selector: 'links-accordeon',
@@ -81,7 +82,7 @@ export class LinksAccordeonComponent implements OnInit, OnChanges {
 
   public openedGroups$ = new BehaviorSubject<Record<string, boolean>>({});
 
-  public constructor(private store$: Store<AppState>) {}
+  public constructor(private store$: Store<AppState>, private modalService: ModalService) {}
 
   public ngOnInit() {
     this.query$ = this.store$.pipe(select(selectViewQuery));
@@ -113,6 +114,14 @@ export class LinksAccordeonComponent implements OnInit, OnChanges {
       }
     }
     this.openedGroups$.next(openedGroups);
+  }
+
+  public onSetLinks(event: MouseEvent, linkType: LinkType) {
+    preventEvent(event);
+
+    if (this.collection && this.document) {
+      this.modalService.showModifyDocumentLinks(this.document.id, this.collection.id, linkType.id);
+    }
   }
 
   public isOpenChanged(state: boolean, id: string) {

@@ -25,21 +25,25 @@ import {ProjectService} from './project.service';
 import {ProjectDto} from '../../dto';
 import {select, Store} from '@ngrx/store';
 import {AppState} from '../../store/app.state';
-import {environment} from '../../../../environments/environment';
 import {map, mergeMap, take} from 'rxjs/operators';
 import {setDefaultUserPermissions} from '../common/public-api-util';
 import {DEFAULT_USER} from '../../constants';
 import {Role} from '../../model/role';
 import {selectPublicProjectId} from '../../store/public-data/public-data.state';
+import {ConfigurationService} from '../../../configuration/configuration.service';
 
 @Injectable()
 export class PublicProjectService extends PublicPermissionService implements ProjectService {
-  constructor(protected httpClient: HttpClient, protected store$: Store<AppState>) {
+  constructor(
+    protected httpClient: HttpClient,
+    protected store$: Store<AppState>,
+    private configurationService: ConfigurationService
+  ) {
     super(store$);
   }
 
   public getProjects(organizationId: string): Observable<ProjectDto[]> {
-    return this.getProject(organizationId, '').pipe(map(project => [project]));
+    return this.getCurrentPublicProject(organizationId).pipe(map(project => [project]));
   }
 
   public getProjectCodes(organizationId: string): Observable<string[]> {
@@ -47,27 +51,29 @@ export class PublicProjectService extends PublicPermissionService implements Pro
   }
 
   public getProject(organizationId: string, projectId: string): Observable<ProjectDto> {
+    return this.httpClient
+      .get<ProjectDto>(this.apiPrefix(organizationId, projectId))
+      .pipe(
+        map(project =>
+          setDefaultUserPermissions(
+            project,
+            DEFAULT_USER,
+            project?.templateMetadata?.editable ? [Role.Read, Role.Write] : [Role.Read]
+          )
+        )
+      );
+  }
+
+  private getCurrentPublicProject(organizationId: string): Observable<ProjectDto> {
     return this.store$.pipe(
       select(selectPublicProjectId),
       take(1),
-      mergeMap(publicProjectId =>
-        this.httpClient
-          .get<ProjectDto>(this.apiPrefix(organizationId, publicProjectId))
-          .pipe(
-            map(project =>
-              setDefaultUserPermissions(
-                project,
-                DEFAULT_USER,
-                project?.templateMetadata?.editable ? [Role.Read, Role.Write] : [Role.Read]
-              )
-            )
-          )
-      )
+      mergeMap(publicProjectId => this.getProject(organizationId, publicProjectId))
     );
   }
 
   public getProjectByCode(organizationId: string, projectCode: string): Observable<ProjectDto> {
-    return this.getProject(organizationId, '');
+    return this.getCurrentPublicProject(organizationId);
   }
 
   public deleteProject(organizationId: string, projectId: string): Observable<any> {
@@ -104,6 +110,6 @@ export class PublicProjectService extends PublicPermissionService implements Pro
   }
 
   private baseApiPrefix(organizationId: string): string {
-    return `${environment.apiUrl}/rest/p/organizations/${organizationId}/projects`;
+    return `${this.configurationService.getConfiguration().apiUrl}/rest/p/organizations/${organizationId}/projects`;
   }
 }

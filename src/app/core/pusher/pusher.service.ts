@@ -22,7 +22,6 @@ import {select, Store} from '@ngrx/store';
 import Pusher from 'pusher-js';
 import {of, timer} from 'rxjs';
 import {catchError, filter, first, map, take, tap, withLatestFrom} from 'rxjs/operators';
-import {environment} from '../../../environments/environment';
 import {AuthService} from '../../auth/auth.service';
 import {userHasManageRoleInResource} from '../../shared/utils/resource.utils';
 import {OrganizationDto, ProjectDto} from '../dto';
@@ -65,7 +64,7 @@ import {selectCurrentUser} from '../store/users/users.state';
 import {View} from '../store/views/view';
 import {convertDefaultViewConfigDtoToModel, convertViewDtoToModel} from '../store/views/view.converter';
 import {ViewsAction} from '../store/views/views.action';
-import {selectViewByCode, selectViewById, selectViewsDictionary} from '../store/views/views.state';
+import {selectViewById, selectViewsDictionary} from '../store/views/views.state';
 import {SequencesAction} from '../store/sequences/sequences.action';
 import {SequenceConverter} from '../store/sequences/sequence.converter';
 import {OrganizationService, ProjectService} from '../data-service';
@@ -74,15 +73,14 @@ import {convertResourceCommentDtoToModel} from '../store/resource-comments/resou
 import {selectResourceCommentsDictionary} from '../store/resource-comments/resource-comments.state';
 import {NotificationService} from '../notifications/notification.service';
 import {AppIdService} from '../service/app-id.service';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {NotificationButton} from '../notifications/notification-button';
-import {DataResourcesAction} from '../store/data-resources/data-resources.action';
 import {Router} from '@angular/router';
 import {LocationStrategy} from '@angular/common';
-import {perspectivesMap} from '../../view/perspectives/perspective';
 import {convertQueryModelToString} from '../store/navigation/query/query.converter';
 import {convertViewCursorToString} from '../store/navigation/view-cursor/view-cursor';
 import {isNotNullOrUndefined} from '../../shared/utils/common.utils';
+import {ConfigurationService} from '../../configuration/configuration.service';
+import {PrintService} from '../service/print.service';
 
 @Injectable({
   providedIn: 'root',
@@ -106,21 +104,22 @@ export class PusherService implements OnDestroy {
     private appId: AppIdService,
     private router: Router,
     private locationStrategy: LocationStrategy,
-    private i18n: I18n
+    private configurationService: ConfigurationService,
+    private printService: PrintService
   ) {
     this.userNotificationTitle = {
-      success: i18n({id: 'rules.blockly.action.message.success', value: 'Success'}),
-      info: i18n({id: 'rules.blockly.action.message.info', value: 'Information'}),
-      warning: i18n({id: 'rules.blockly.action.message.warning', value: 'Warning'}),
-      error: i18n({id: 'rules.blockly.action.message.error', value: 'Error'}),
+      success: $localize`:@@rules.blockly.action.message.success:Success`,
+      info: $localize`:@@rules.blockly.action.message.info:Information`,
+      warning: $localize`:@@rules.blockly.action.message.warning:Warning`,
+      error: $localize`:@@rules.blockly.action.message.error:Error`,
     };
 
-    const okBtn = i18n({id: 'button.ok', value: 'OK'});
+    const okBtn = $localize`:@@button.ok:OK`;
     this.dismissButton = {text: okBtn, bold: true};
   }
 
   public init(): void {
-    if (environment.auth) {
+    if (this.configurationService.getConfiguration().auth) {
       this.subscribeToUser();
     }
     this.subscribeToWorkspace();
@@ -140,10 +139,10 @@ export class PusherService implements OnDestroy {
   }
 
   private subscribePusher(user: User): void {
-    Pusher.logToConsole = !environment.pusherLogDisabled;
-    this.pusher = new Pusher(environment.pusherKey, {
-      cluster: environment.pusherCluster,
-      authEndpoint: `${environment.apiUrl}/rest/pusher`,
+    Pusher.logToConsole = !this.configurationService.getConfiguration().pusherLogDisabled;
+    this.pusher = new Pusher(this.configurationService.getConfiguration().pusherKey, {
+      cluster: this.configurationService.getConfiguration().pusherCluster,
+      authEndpoint: `${this.configurationService.getConfiguration().apiUrl}/rest/pusher`,
       auth: {
         params: {},
         headers: {
@@ -237,9 +236,6 @@ export class PusherService implements OnDestroy {
       this.store$.dispatch(new CollectionsAction.Get({force: true}));
       this.store$.dispatch(new LinkTypesAction.Get({force: true}));
       this.store$.dispatch(new ViewsAction.Get({force: true}));
-      this.store$.dispatch(new DataResourcesAction.ClearQueries({}));
-      this.store$.dispatch(new DocumentsAction.ClearQueries({}));
-      this.store$.dispatch(new LinkInstancesAction.ClearQueries({}));
     }
   }
 
@@ -406,47 +402,70 @@ export class PusherService implements OnDestroy {
 
   private bindPrintEvents() {
     this.channel.bind('PrintRequest', data => {
-      const a = document.createElement('a');
-      a.href = `${this.locationStrategy.getBaseHref()}print/${data.object.organizationCode}/${
-        data.object.projectCode
-      }/${data.object.type.toLowerCase()}/${data.object.resourceId}/${data.object.documentId}/${
-        data.object.attributeId
-      }`;
-      a.target = '_blank';
-      a.click();
+      if (data.correlationId === this.appId.getAppId()) {
+        const a = document.createElement('a');
+        a.href = `${this.locationStrategy.getBaseHref()}print/${data.object.organizationCode}/${
+          data.object.projectCode
+        }/${data.object.type.toLowerCase()}/${data.object.resourceId}/${data.object.documentId}/${
+          data.object.attributeId
+        }`;
+        a.target = '_blank';
+        a.click();
+      }
+    });
+
+    this.channel.bind('TextPrintRequest', data => {
+      if (data.correlationId === this.appId.getAppId()) {
+        this.printService.setContent(data.object.text);
+        const a = document.createElement('a');
+        a.href = `${this.locationStrategy.getBaseHref()}print/${data.object.organizationCode}/${
+          data.object.projectCode
+        }/text`;
+        a.target = '_blank';
+        a.click();
+      }
     });
   }
 
   private bindNavigateEvents() {
     this.channel.bind('NavigationRequest', data => {
-      if (this.isCurrentWorkspace(data)) {
+      if (this.isCurrentWorkspace(data) && data.correlationId === this.appId.getAppId()) {
         this.store$.pipe(select(selectViewById(data.object.viewId)), take(1)).subscribe(view => {
-          const encodedQuery = convertQueryModelToString(view.query);
-          const encodedCursor = isNotNullOrUndefined(data.object.documentId)
-            ? convertViewCursorToString({
-                collectionId: data.object.collectionId,
-                documentId: data.object.documentId,
-                attributeId: data.object.attributeId,
-                sidebar: data.object.sidebar,
-              })
-            : '';
-
-          if (data.object.newWindow) {
-            const a = document.createElement('a');
-            a.href = `${this.locationStrategy.getBaseHref()}w/${data.object.organizationCode}/${
-              data.object.projectCode
-            }/view;vc=${view.code}/${view.perspective}?q=${encodedQuery}&c=${encodedCursor}`;
+          if (view) {
+            const encodedQuery = convertQueryModelToString(view.query);
+            const encodedCursor = isNotNullOrUndefined(data.object.documentId)
+              ? convertViewCursorToString({
+                  collectionId: data.object.collectionId,
+                  documentId: data.object.documentId,
+                  attributeId: data.object.attributeId,
+                  sidebar: data.object.sidebar,
+                })
+              : '';
 
             if (data.object.newWindow) {
-              a.target = '_blank';
-            }
+              const a = document.createElement('a');
+              a.href = `${this.locationStrategy.getBaseHref()}w/${data.object.organizationCode}/${
+                data.object.projectCode
+              }/view;vc=${view.code}/${view.perspective}?q=${encodedQuery}&c=${encodedCursor}`;
 
-            a.click();
-          } else {
-            this.router.navigate(
-              ['/w', data.object.organizationCode, data.object.projectCode, 'view', {vc: view.code}, view.perspective],
-              {queryParams: {q: encodedQuery, c: encodedCursor}}
-            );
+              if (data.object.newWindow) {
+                a.target = '_blank';
+              }
+
+              a.click();
+            } else {
+              this.router.navigate(
+                [
+                  '/w',
+                  data.object.organizationCode,
+                  data.object.projectCode,
+                  'view',
+                  {vc: view.code},
+                  view.perspective,
+                ],
+                {queryParams: {q: encodedQuery, c: encodedCursor}}
+              );
+            }
           }
         });
       }
@@ -456,12 +475,14 @@ export class PusherService implements OnDestroy {
   private bindSendEmailEvents() {
     // SendEmailRequest
     this.channel.bind('SendEmailRequest', data => {
-      const a = document.createElement('a');
-      a.href = `mailto:${encodeURIComponent(data.object.email)}?subject=${encodeURIComponent(
-        data.object.subject
-      )}&body=${encodeURIComponent(data.object.body)}`;
-      a.target = '_blank';
-      a.click();
+      if (data.correlationId === this.appId.getAppId()) {
+        const a = document.createElement('a');
+        a.href = `mailto:${encodeURIComponent(data.object.email)}?subject=${encodeURIComponent(
+          data.object.subject
+        )}&body=${encodeURIComponent(data.object.body)}`;
+        a.target = '_blank';
+        a.click();
+      }
     });
   }
 
@@ -475,8 +496,6 @@ export class PusherService implements OnDestroy {
       .subscribe(collection => {
         if (!collection) {
           this.store$.dispatch(new DocumentsAction.Get({query: {stems: [{collectionId}]}, silent: true}));
-          this.store$.dispatch(new DataResourcesAction.ClearQueries({collectionId}));
-          this.store$.dispatch(new DocumentsAction.ClearQueries({collectionId}));
         }
       });
   }

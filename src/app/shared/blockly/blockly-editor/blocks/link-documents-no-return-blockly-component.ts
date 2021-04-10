@@ -20,7 +20,6 @@
 import {BlocklyComponent} from './blockly-component';
 import {COLOR_PRIMARY} from '../../../../core/constants';
 import {BlocklyUtils, MasterBlockType} from '../blockly-utils';
-import {I18n} from '@ngx-translate/i18n-polyfill';
 import {isNotNullOrUndefined, isNullOrUndefined} from '../../../utils/common.utils';
 import {LinkType} from '../../../../core/store/link-types/link.type';
 
@@ -30,19 +29,16 @@ export class LinkDocumentsNoReturnBlocklyComponent extends BlocklyComponent {
   protected tooltip: string;
   protected linkTypeOptions = [];
 
-  public constructor(public blocklyUtils: BlocklyUtils, public i18n: I18n, protected linkTypes: LinkType[]) {
-    super(blocklyUtils, i18n);
+  public constructor(public blocklyUtils: BlocklyUtils, protected linkTypes: LinkType[]) {
+    super(blocklyUtils);
 
-    linkTypes.forEach(linkType => this.linkTypeOptions.push([linkType.name, linkType.id]));
+    linkTypes.forEach(linkType => this.linkTypeOptions.push([linkType.name.replace(/ /g, '\u00A0'), linkType.id]));
 
     if (this.linkTypeOptions.length === 0) {
       this.linkTypeOptions.push(['?', '']);
     }
 
-    this.tooltip = i18n({
-      id: 'blockly.tooltip.linkDocumentsNoReturnBlock',
-      value: 'Links two records using the selected link type.',
-    });
+    this.tooltip = $localize`:@@blockly.tooltip.linkDocumentsNoReturnBlock:Links two records using the selected link type.`;
   }
 
   public getVisibility(): MasterBlockType[] {
@@ -109,53 +105,61 @@ export class LinkDocumentsNoReturnBlocklyComponent extends BlocklyComponent {
     const linkTypeId = block.getField('LINKTYPE').value_;
 
     // what types can we have based on the selected link type?
-    const linkType = this.linkTypes.find(lt => lt.id === linkTypeId);
-    const checks = linkType.collectionIds;
+    const linkType = this.linkTypes?.find(lt => lt.id === linkTypeId);
 
-    // disconnect invalid types
-    block.inputList.forEach(input => {
-      if (isNotNullOrUndefined(input.connection.targetConnection)) {
-        if (
-          checks[0] + BlocklyUtils.DOCUMENT_VAR_SUFFIX !==
-            input.connection.targetConnection?.sourceBlock_?.outputConnection?.check_[0] &&
-          checks[1] + BlocklyUtils.DOCUMENT_VAR_SUFFIX !==
-            input.connection.targetConnection?.sourceBlock_?.outputConnection?.check_[0]
-        ) {
-          this.blocklyUtils.tryDisconnect(
-            input.connection.targetConnection.sourceBlock_,
-            input.connection.targetConnection
-          );
+    if (linkType) {
+      const checks = linkType.collectionIds;
+
+      // disconnect invalid types
+      block.inputList.forEach(input => {
+        if (isNotNullOrUndefined(input.connection.targetConnection)) {
+          if (
+            checks[0] + BlocklyUtils.DOCUMENT_VAR_SUFFIX !==
+              input.connection.targetConnection?.sourceBlock_?.outputConnection?.check_[0] &&
+            checks[1] + BlocklyUtils.DOCUMENT_VAR_SUFFIX !==
+              input.connection.targetConnection?.sourceBlock_?.outputConnection?.check_[0]
+          ) {
+            this.blocklyUtils.tryDisconnect(
+              input.connection.targetConnection.sourceBlock_,
+              input.connection.targetConnection
+            );
+          }
         }
-      }
-    });
+      });
 
-    // what do we already have connected on inputs?
-    const connected = [];
-    block.inputList.forEach(input => {
-      if (isNotNullOrUndefined(input.connection.targetConnection?.check_)) {
-        connected.push(input.connection.targetConnection?.check_);
-      }
-    });
+      // what do we already have connected on inputs?
+      const connected = [];
+      block.inputList.forEach(input => {
+        if (isNotNullOrUndefined(input.connection.targetConnection?.check_)) {
+          const check = input.connection.targetConnection?.check_;
+          if (check instanceof Array) {
+            connected.push(...input.connection.targetConnection?.check_);
+          } else {
+            connected.push(input.connection.targetConnection?.check_);
+          }
+        }
+      });
 
-    // what types can we set for the unconnected inputs
-    const checkTypes = [];
-    if (connected.length === 1) {
-      if (connected[0] === checks[0] + BlocklyUtils.DOCUMENT_VAR_SUFFIX) {
-        checkTypes.push(checks[1] + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
+      // what types can we set for the unconnected inputs
+      const checkTypes = [];
+      if (connected.length === 1) {
+        if (connected[0] === checks[0] + BlocklyUtils.DOCUMENT_VAR_SUFFIX) {
+          checkTypes.push(checks[1] + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
+        } else {
+          checkTypes.push(checks[0] + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
+        }
       } else {
         checkTypes.push(checks[0] + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
+        checkTypes.push(checks[1] + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
       }
-    } else {
-      checkTypes.push(checks[0] + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
-      checkTypes.push(checks[1] + BlocklyUtils.DOCUMENT_VAR_SUFFIX);
-    }
 
-    // set the type only where there isn't anything connected
-    block.inputList.forEach(input => {
-      if (isNullOrUndefined(input.connection.targetConnection?.check_)) {
-        input.setCheck(checkTypes);
-      }
-    });
+      // set the type only where there isn't anything connected
+      block.inputList.forEach(input => {
+        if (isNullOrUndefined(input.connection.targetConnection?.check_)) {
+          input.setCheck(checkTypes);
+        }
+      });
+    }
   }
 
   public onWorkspaceChange(workspace, changeEvent) {
