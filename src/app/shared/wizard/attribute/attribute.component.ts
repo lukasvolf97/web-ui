@@ -49,9 +49,9 @@ export class AttributeComponent implements OnInit, AfterViewInit {
     document.querySelectorAll('.wiz-select-button').forEach(item => item.classList.remove('dropdown-toggle'));
   }
 
-  public onSelectValue(event: SelectItemModel): void {
-    this.selectedAttributeId = event;
-    this.selectedItem.emit(event);
+  public onSelectValue(id: SelectItemModel): void {
+    this.selectedAttributeId = id;
+    this.selectedItem.emit(id);
   }
 
   private transformCollectionsAttributesToSelectItems(): void {
