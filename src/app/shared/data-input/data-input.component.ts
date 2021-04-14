@@ -133,15 +133,14 @@ export class DataInputComponent implements OnChanges, OnDestroy {
 
   private getWidthOfInput(value: DataValue): number | null {
     if (this.computationNotNecessary()) {
-      return null;
+      return this.configuration.common.minWidth ?? null;
     }
     if (this.constraint?.type === ConstraintType.Boolean) {
-      return 16;
+      return Math.max(16, this.configuration.common.minWidth ?? 0);
     }
-
     if (!this.tempElement) {
       this.tempElement = this.createTempElement();
-      document.body.appendChild(this.tempElement);
+      this.elementRef.nativeElement.appendChild(this.tempElement);
     } else {
       this.tempElement.classList.remove('d-none');
     }
@@ -151,7 +150,7 @@ export class DataInputComponent implements OnChanges, OnDestroy {
 
     this.tempElement.classList.add('d-none');
 
-    return textWidth;
+    return Math.max(textWidth, this.configuration.common.minWidth ?? 0);
   }
 
   private computationNotNecessary(): boolean {
@@ -168,7 +167,7 @@ export class DataInputComponent implements OnChanges, OnDestroy {
 
   public ngOnDestroy() {
     if (this.tempElement) {
-      document.body.removeChild(this.tempElement);
+      this.elementRef.nativeElement.removeChild(this.tempElement);
       this.tempElement = null;
     }
   }

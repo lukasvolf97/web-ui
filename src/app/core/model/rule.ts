@@ -21,6 +21,7 @@ export enum RuleType {
   AutoLink = 'AUTO_LINK',
   Blockly = 'BLOCKLY',
   Zapier = 'ZAPIER',
+  Wizard = 'WIZARD',
 }
 
 export enum RuleTiming {
@@ -37,6 +38,7 @@ export const ruleTypeMap = {
   [RuleType.AutoLink]: RuleType.AutoLink,
   [RuleType.Blockly]: RuleType.Blockly,
   [RuleType.Zapier]: RuleType.Zapier,
+  [RuleType.Wizard]: RuleType.Wizard,
 };
 
 export const ruleTimingMap = {

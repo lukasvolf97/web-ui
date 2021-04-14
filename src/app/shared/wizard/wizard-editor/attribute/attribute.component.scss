@@ -1,0 +1,19 @@
+@import '/src/styles/variables';
+
+:host ::ng-deep .wiz-select-attribute {
+  display: inline-block;
+
+  span {
+    font-weight: bold;
+    font-size: 1.5em;
+    color: $primary;
+
+    &:hover {
+      color: $black;
+    }
+  }
+  button {
+    border: none;
+    padding: 0;
+  }
+}

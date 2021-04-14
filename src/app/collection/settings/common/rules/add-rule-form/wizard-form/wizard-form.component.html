@@ -1,0 +1,12 @@
+<div [formGroup]="form">
+  <div class="form-group text-muted small" i18n="@@collection.config.tab.rules.blockly.info">
+  Rule your records by your own rules! Triggers automatically upon record update.
+  </div>
+  <wizard
+    [collections]="collections$ | async"
+    [views]="views$ | async"
+    [linkTypes]="linkTypes$ | async"
+    [variables]="variables">
+  </wizard>
+
+</div>

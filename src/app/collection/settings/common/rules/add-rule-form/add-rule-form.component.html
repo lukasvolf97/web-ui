@@ -64,6 +64,12 @@
           [collection]="collection"
           [linkType]="linkType">
         </blockly-form>
+        <wizard-form
+          *ngSwitchCase="ruleType.Wizard"
+          [form]="configBlockly"
+          [collection]="collection"
+          [linkType]="linkType">  
+        </wizard-form>
       </div>
 
       <div class="d-flex justify-content-end align-items-center flex-wrap">

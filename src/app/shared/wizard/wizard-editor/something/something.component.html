@@ -1,0 +1,25 @@
+<ng-container *ngIf="{attribute: attribute, dataValue: dataValue$ | async} as data">
+  <ng-container
+    *ngIf="data.attribute | dataInputEditInfo:data.dataValue:editable:(editing$ | async):false as dataInputInfo">
+    <div *ngIf="!dataInputInfo.showDataInput && !editedValue"
+         class="d-inline-block cursor-pointer"
+         (click)="openEditor(data.attribute)">
+      <span>
+        something
+      </span>
+    </div>
+    <data-input *ngIf="dataInputInfo.showDataInput || editedValue"
+      class="wiz-data-input p-0 cursor-pointer d-inline-block"
+      [constraint]="data.attribute?.constraint"
+      [dataValue]="data.dataValue"
+      [focus]="true"
+      [readonly]="!(editing$|async)"
+      [configuration]="configuration | async"
+      [editableInReadonly]="true"
+      (click)="$event.preventDefault(); openEditor(data.attribute)"
+      (valueChange)="onValueChange($event)"
+      (save)="onValueSave($event)"
+      (cancel)="onCancelEditing()">
+    </data-input>
+  </ng-container>
+</ng-container>

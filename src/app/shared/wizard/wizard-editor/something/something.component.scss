@@ -1,0 +1,26 @@
+@import '/src/styles/variables';
+
+::ng-deep .wiz-data-input {
+  input {
+    display: flex;
+    font-weight: bold;
+    transition: width 0.25s;
+  }
+
+  span {
+    font-weight: bold;
+  }
+
+  div {
+    display: inline-block !important;
+  }
+}
+
+div {
+  font-weight: bold;
+  color: $primary;
+
+  &:hover {
+    color: $black;
+  }
+}

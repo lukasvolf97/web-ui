@@ -1,0 +1,12 @@
+@import '../../../../../../styles/variables';
+
+.square {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 100%;
+  transition: box-shadow $animation-duration, transform $animation-duration;
+
+  &:hover {
+    box-shadow: $shadow-default;
+  }
+}

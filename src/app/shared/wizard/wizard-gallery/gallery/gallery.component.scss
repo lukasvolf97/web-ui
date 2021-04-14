@@ -1,0 +1,61 @@
+@import '../../../../../styles/variables';
+
+.gallery-wrapper {
+  height: 50vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+::-webkit-scrollbar {
+  width: 17px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: $gray-300;
+  border-radius: 20px;
+  border: 6px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: $secondary;
+}
+
+.category-separator {
+  padding: 10px;
+  padding-left: 25px;
+  color: $primary;
+  margin: 0;
+  position: relative;
+  vertical-align: middle;
+
+  strong {
+    position: relative;
+    z-index: 10;
+    background: $white;
+    padding: 4px 8px;
+    vertical-align: middle;
+  }
+  span {
+    vertical-align: middle;
+    font-size: 0.7em;
+    color: $secondary;
+    margin-left: 10px;
+  }
+
+  &::after {
+    position: absolute;
+    content: '';
+    z-index: 0;
+    bottom: 50%;
+    margin-bottom: -2px;
+    height: 2px;
+    left: 0;
+    right: 0;
+    background: $gray-300;
+  }
+}

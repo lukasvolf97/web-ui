@@ -1,0 +1,41 @@
+@import '../../../../../styles/variables';
+
+.wrapper {
+  position: relative;
+  overflow: hidden;
+  height: 50px;
+}
+
+.list {
+  position: absolute;
+  min-width: 3000px;
+  border-bottom: none !important;
+  border-top: 1px solid $gray-200 !important;
+}
+
+.scroller {
+  cursor: pointer;
+  padding: 0.5rem 0.8rem;
+}
+
+.scroller-right {
+  float: right;
+}
+
+.scroller-left {
+  float: left;
+}
+
+.link {
+  border-top: 4px solid transparent !important;
+  border-bottom: none !important;
+  border-radius: 0;
+}
+
+.link:hover {
+  border-color: $gray-200 !important;
+}
+
+.link.active {
+  border-color: $secondary !important;
+}

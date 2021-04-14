@@ -1,4 +1,4 @@
-<ng-container [ngSwitch]="notNullConstraintType">
+<ng-container #dataInputContainer [ngSwitch]="notNullConstraintType">
   <address-data-input *ngSwitchCase="constraintType.Address"
                       [focus]="focus"
                       [readonly]="readonly"

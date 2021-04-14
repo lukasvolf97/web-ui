@@ -1,0 +1,27 @@
+<div class="mt-2">
+  <div *ngIf='leftArrowVisible' 
+    id="scroller-left" 
+    (click)="moveCategoriesLeft()" 
+    class="scroller scroller-left">
+      <i class="fa fa-arrow-left"></i>
+  </div>
+  <div *ngIf='rightArrowVisible' 
+    id="scroller-right" 
+    (click)="moveCategoriesRight()" 
+    class='scroller scroller-right'>
+    <i class="fa fa-arrow-right"></i>
+  </div>
+  <div id="wrapper" 
+    class="wrapper">
+    <ul id="list" 
+      class="nav nav-tabs list">
+      <li *ngFor="let category of categories" 
+        class="nav-item">
+        <a id="{{category.toLowerCase()}}-link" (click)="scroll(category.toLowerCase())"
+          class="nav-link link">
+          {{ category }}
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

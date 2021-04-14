@@ -1,0 +1,22 @@
+<div class="card wizard-editor-wrapper d-flex justify-content-center align-items-center">
+    <div (click)=displayGallery() class="back-arrow">
+      <i title="Back to gallery" class="fas fa-chevron-left chevron mr-2 cursor-pointer clickable"></i>
+    </div>
+    <div class="px-5" *ngIf='(rule$ | async) as rule'>
+      <span *ngFor='let sentence of rule.split(",")'>
+        <span *ngFor='let word of sentence.split(" ")' [ngSwitch]='word'>
+          {{(word === 'attribute' || word === 'something') ? '' : word}}
+          <attribute *ngSwitchCase="'attribute'"
+                     class="attribute"
+                     [collections]='collections'
+                     (selectedItem)='onSelectedItem($event)'>
+          </attribute>
+          <something *ngSwitchCase="'something'"
+                     [collection$]='selectedCollection$'
+                     [attribute]='selectedAttribute$ | async'
+                     [constraintData]='constraintData$ | async'>
+          </something>
+        </span>
+      </span>
+    </div>
+</div>
