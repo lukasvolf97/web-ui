@@ -23,10 +23,12 @@ import {AttributeComponent} from './attribute/attribute.component';
 import {PipesModule} from '../pipes/pipes.module';
 import {SelectModule} from '../select/select.module';
 import {ConstraintTypeIconPipe} from '../pipes/constraint-type-icon.pipe';
+import {SomethingComponent} from './something/something.component';
+import {DataInputModule} from '../data-input/data-input.module';
 
 @NgModule({
-  declarations: [AttributeComponent],
-  imports: [CommonModule, SelectModule, PipesModule],
+  declarations: [AttributeComponent, SomethingComponent],
+  imports: [CommonModule, SelectModule, PipesModule, DataInputModule],
   providers: [ConstraintTypeIconPipe],
 })
 export class WizardModule {}
