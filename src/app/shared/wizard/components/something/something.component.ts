@@ -33,9 +33,6 @@ import DOMPurify from 'dompurify';
 })
 export class SomethingComponent implements OnChanges {
   @Input()
-  public collection$: Observable<Collection>;
-
-  @Input()
   public attribute: Attribute;
 
   @Input()
