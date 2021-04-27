@@ -19,7 +19,7 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {AttributeComponent} from './components/attribute/attribute.component';
+import {AttributeComponent} from './rule/components/attribute/attribute.component';
 import {PipesModule} from '../pipes/pipes.module';
 import {SelectModule} from '../select/select.module';
 import {ConstraintTypeIconPipe} from '../pipes/constraint-type-icon.pipe';
@@ -29,6 +29,7 @@ import {SeparatorComponent} from './rule/components/separator/separator.componen
 import {AttributeChangeActionComponent} from './rule/actions/attribute-change-action/attribute-change-action.component';
 import {AttributeChangeConditionComponent} from './rule/conditions/attribute-change-condition/attribute-change-condition.component';
 import {RuleComponent} from './rule/rule.component';
+import {RuleEditorComponent} from './rule-editor/rule-editor.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import {RuleComponent} from './rule/rule.component';
     AttributeChangeActionComponent,
     AttributeChangeConditionComponent,
     RuleComponent,
+    RuleEditorComponent,
   ],
   imports: [CommonModule, SelectModule, PipesModule, DataInputModule],
   providers: [ConstraintTypeIconPipe],

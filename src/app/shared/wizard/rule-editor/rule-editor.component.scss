@@ -1,0 +1,13 @@
+@import '/src/styles/variables';
+
+.wiz-editor-wrapper {
+  height: 50vh;
+  font-size: 1.5em;
+  white-space: pre-wrap;
+
+  .back-arrow {
+    position: absolute;
+    left: 1em;
+    top: 1em;
+  }
+}
