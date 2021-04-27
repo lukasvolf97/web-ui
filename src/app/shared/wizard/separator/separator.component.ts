@@ -17,19 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {AttributeComponent} from './attribute/attribute.component';
-import {PipesModule} from '../pipes/pipes.module';
-import {SelectModule} from '../select/select.module';
-import {ConstraintTypeIconPipe} from '../pipes/constraint-type-icon.pipe';
-import {SomethingComponent} from './something/something.component';
-import {DataInputModule} from '../data-input/data-input.module';
-import {SeparatorComponent} from './separator/separator.component';
+import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 
-@NgModule({
-  declarations: [AttributeComponent, SomethingComponent, SeparatorComponent],
-  imports: [CommonModule, SelectModule, PipesModule, DataInputModule],
-  providers: [ConstraintTypeIconPipe],
+@Component({
+  selector: 'separator',
+  templateUrl: './separator.component.html',
+  styleUrls: ['./separator.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardModule {}
+export class SeparatorComponent {
+  @Input()
+  public separator: string;
+
+  constructor() {}
+
+  /* TODO */
+}
