@@ -18,9 +18,9 @@
  */
 
 import {Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges, SimpleChanges} from '@angular/core';
-import {Collection} from '../../../../core/store/collections/collection';
-import {ConstraintTypeIconPipe} from 'src/app/shared/pipes/constraint-type-icon.pipe';
-import {SelectItem2Model} from 'src/app/shared/select/select-item2/select-item2.model';
+import {Collection} from '../../../../../core/store/collections/collection';
+import {ConstraintTypeIconPipe} from '../../../../pipes/constraint-type-icon.pipe';
+import {SelectItem2Model} from '../../../../select/select-item2/select-item2.model';
 
 @Component({
   selector: 'attribute',

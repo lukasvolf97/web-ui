@@ -31,10 +31,10 @@ import {Component, ChangeDetectionStrategy, ComponentRef} from '@angular/core';
 import {ConstraintData} from '@lumeer/data-filters';
 import {combineLatest, Subject} from 'rxjs';
 import {Collection} from 'src/app/core/store/collections/collection';
-import {Action} from '../actions/action';
+import {Action} from './actions/action';
 import {RuleBuilderUtil} from '../rule-builder-util';
-import {SeparatorComponent} from '../components/separator/separator.component';
-import {Condition} from '../conditions/condition';
+import {SeparatorComponent} from '../rule/components/separator/separator.component';
+import {Condition} from './conditions/condition';
 
 @Component({
   selector: 'rule',

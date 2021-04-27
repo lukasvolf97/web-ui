@@ -17,21 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {OnInit, Output} from '@angular/core';
-import {Input} from '@angular/core';
+import {Input, OnInit, Output} from '@angular/core';
 import {Component, ChangeDetectionStrategy} from '@angular/core';
-import {ConstraintData, DataValue} from '@lumeer/data-filters';
-import {combineLatest, Subject} from 'rxjs';
+import {DataValue} from '@lumeer/data-filters/dist/data-value/data-value';
 import {Attribute, Collection} from 'src/app/core/store/collections/collection';
-import {RuleBuilderUtil} from '../../rule-builder-util';
-import {Action} from '../action';
+import {Subject, combineLatest} from 'rxjs';
+import {RuleBuilderUtil} from '../../../rule-builder-util';
+import {ConstraintData} from '@lumeer/data-filters';
+import {Condition} from '../condition';
 
 @Component({
-  selector: 'attribute-change-action',
-  templateUrl: './attribute-change-action.component.html',
+  selector: 'attribute-change-condition',
+  templateUrl: './attribute-change-condition.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AttributeChangeActionComponent implements OnInit, Action {
+export class AttributeChangeConditionComponent implements OnInit, Condition {
   @Input()
   public collections: Array<Collection>;
 
@@ -50,7 +50,7 @@ export class AttributeChangeActionComponent implements OnInit, Action {
     combineLatest([this.editedValue$, this.selectedAttribute$]).subscribe(val => {
       const editedValue = (<DataValue>val[0]).value;
       const attributeId = (<Attribute>val[1]).id;
-      this.code.next(new RuleBuilderUtil().setValueForNewDocumentAttribute(attributeId, editedValue).build());
+      this.code.next(new RuleBuilderUtil().newDocumentAttribute(attributeId).equalsTo(editedValue).build());
     });
   }
 

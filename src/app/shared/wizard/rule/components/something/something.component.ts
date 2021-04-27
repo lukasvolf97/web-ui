@@ -19,7 +19,7 @@
 
 import {EventEmitter, Output, SimpleChanges} from '@angular/core';
 import {Component, ChangeDetectionStrategy, Input, OnChanges} from '@angular/core';
-import {Collection, ConstraintData, ConstraintType, DataValue, UnknownConstraint} from '@lumeer/data-filters';
+import {ConstraintData, ConstraintType, DataValue, UnknownConstraint} from '@lumeer/data-filters';
 import {BehaviorSubject, Observable, of} from 'rxjs';
 import {Attribute} from 'src/app/core/store/collections/collection';
 import {DataInputConfiguration} from 'src/app/shared/data-input/data-input-configuration';

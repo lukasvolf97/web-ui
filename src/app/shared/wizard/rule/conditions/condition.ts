@@ -18,7 +18,7 @@
  */
 import {ConstraintData} from '@lumeer/data-filters';
 import {Subject} from 'rxjs';
-import {Collection} from '../../../core/store/collections/collection';
+import {Collection} from '../../../../core/store/collections/collection';
 
 export interface Condition {
   collections: Array<Collection>;
