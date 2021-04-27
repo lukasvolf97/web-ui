@@ -1,0 +1,13 @@
+<span>
+  <span> change </span>
+  <attribute  class='attribute'
+              [emptyValue]='"attribute"'
+              [collections]='collections'
+              (selectedItem)='onSelectedItem($event)'>
+  </attribute>
+  <span> to </span>
+  <something  [attribute]='selectedAttribute$ | async'
+              [constraintData]='constraintData'
+              (inputValue)='onValueChange($event)'>
+  </something>
+</span>

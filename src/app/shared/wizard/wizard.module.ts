@@ -26,9 +26,10 @@ import {ConstraintTypeIconPipe} from '../pipes/constraint-type-icon.pipe';
 import {SomethingComponent} from './components/something/something.component';
 import {DataInputModule} from '../data-input/data-input.module';
 import {SeparatorComponent} from './components/separator/separator.component';
+import {AttributeChangeActionComponent} from './actions/attribute-change-action/attribute-change-action.component';
 
 @NgModule({
-  declarations: [AttributeComponent, SomethingComponent, SeparatorComponent],
+  declarations: [AttributeComponent, SomethingComponent, SeparatorComponent, AttributeChangeActionComponent],
   imports: [CommonModule, SelectModule, PipesModule, DataInputModule],
   providers: [ConstraintTypeIconPipe],
 })
