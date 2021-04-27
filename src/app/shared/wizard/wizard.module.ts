@@ -19,16 +19,16 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {AttributeComponent} from './rule/components/attribute/attribute.component';
+import {AttributeComponent} from './rule-editor/rule/components/attribute/attribute.component';
 import {PipesModule} from '../pipes/pipes.module';
 import {SelectModule} from '../select/select.module';
 import {ConstraintTypeIconPipe} from '../pipes/constraint-type-icon.pipe';
-import {SomethingComponent} from './rule/components/something/something.component';
+import {SomethingComponent} from './rule-editor/rule/components/something/something.component';
 import {DataInputModule} from '../data-input/data-input.module';
-import {SeparatorComponent} from './rule/components/separator/separator.component';
-import {AttributeChangeActionComponent} from './rule/actions/attribute-change-action/attribute-change-action.component';
-import {AttributeChangeConditionComponent} from './rule/conditions/attribute-change-condition/attribute-change-condition.component';
-import {RuleComponent} from './rule/rule.component';
+import {SeparatorComponent} from './rule-editor/rule/components/separator/separator.component';
+import {AttributeChangeActionComponent} from './rule-editor/rule/actions/attribute-change-action/attribute-change-action.component';
+import {AttributeChangeConditionComponent} from './rule-editor/rule/conditions/attribute-change-condition/attribute-change-condition.component';
+import {RuleComponent} from './rule-editor/rule/rule.component';
 import {RuleEditorComponent} from './rule-editor/rule-editor.component';
 
 @NgModule({

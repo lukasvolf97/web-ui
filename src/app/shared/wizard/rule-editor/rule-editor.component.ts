@@ -24,8 +24,8 @@ import {Observable} from 'rxjs';
 import {AppState} from 'src/app/core/store/app.state';
 import {Collection} from 'src/app/core/store/collections/collection';
 import {selectConstraintData} from 'src/app/core/store/constraint-data/constraint-data.state';
-import {AttributeChangeActionComponent} from '../rule/actions/attribute-change-action/attribute-change-action.component';
-import {AttributeChangeConditionComponent} from '../rule/conditions/attribute-change-condition/attribute-change-condition.component';
+import {AttributeChangeActionComponent} from './rule/actions/attribute-change-action/attribute-change-action.component';
+import {AttributeChangeConditionComponent} from './rule/conditions/attribute-change-condition/attribute-change-condition.component';
 
 @Component({
   selector: 'rule-editor',
