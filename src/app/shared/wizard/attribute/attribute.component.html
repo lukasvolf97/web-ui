@@ -1,0 +1,8 @@
+<ng-container *ngIf="collections">
+  <select-item2 class="wiz-select-attribute"
+               [emptyValue]="emptyValue"
+               [items]="options"
+               [selectedPath]="[selectedAttributeId]"
+               (selectPath)="onSelectValue($event)">
+  </select-item2>
+</ng-container>
