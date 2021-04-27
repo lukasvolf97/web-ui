@@ -28,6 +28,7 @@ import {DataInputModule} from '../data-input/data-input.module';
 import {SeparatorComponent} from './components/separator/separator.component';
 import {AttributeChangeActionComponent} from './actions/attribute-change-action/attribute-change-action.component';
 import {AttributeChangeConditionComponent} from './conditions/attribute-change-condition/attribute-change-condition.component';
+import {RuleComponent} from './rule/rule.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import {AttributeChangeConditionComponent} from './conditions/attribute-change-c
     SeparatorComponent,
     AttributeChangeActionComponent,
     AttributeChangeConditionComponent,
+    RuleComponent,
   ],
   imports: [CommonModule, SelectModule, PipesModule, DataInputModule],
   providers: [ConstraintTypeIconPipe],
