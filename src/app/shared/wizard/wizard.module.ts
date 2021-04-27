@@ -19,13 +19,13 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {AttributeComponent} from './attribute/attribute.component';
+import {AttributeComponent} from './components/attribute/attribute.component';
 import {PipesModule} from '../pipes/pipes.module';
 import {SelectModule} from '../select/select.module';
 import {ConstraintTypeIconPipe} from '../pipes/constraint-type-icon.pipe';
-import {SomethingComponent} from './something/something.component';
+import {SomethingComponent} from './components/something/something.component';
 import {DataInputModule} from '../data-input/data-input.module';
-import {SeparatorComponent} from './separator/separator.component';
+import {SeparatorComponent} from './components/separator/separator.component';
 
 @NgModule({
   declarations: [AttributeComponent, SomethingComponent, SeparatorComponent],
